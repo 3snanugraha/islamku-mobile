@@ -4,12 +4,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
-import RenderHtml from 'react-native-render-html';
 import { useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
+import RenderHtml from 'react-native-render-html';
 
-interface SurahDetail {
+
+interface TafsirDetail {
   nomor: number;
   nama: string;
   namaLatin: string;
@@ -20,6 +21,22 @@ interface SurahDetail {
   audioFull: {
     [key: string]: string;
   };
+  tafsir: {
+    ayat: number;
+    teks: string;
+  }[];
+  suratSelanjutnya: {
+    nomor: number;
+    nama: string;
+    namaLatin: string;
+    jumlahAyat: number;
+  } | false;
+  suratSebelumnya: {
+    nomor: number;
+    nama: string;
+    namaLatin: string;
+    jumlahAyat: number;
+  } | false;
 }
 
 interface AudioOption {
@@ -28,14 +45,14 @@ interface AudioOption {
   url: string;
 }
 
-export default function SurahDetailScreen() {
+export default function TafsirDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const [surahDetail, setSurahDetail] = useState<SurahDetail | null>(null);
+  const { width } = useWindowDimensions();
+  const [tafsirDetail, setTafsirDetail] = useState<TafsirDetail | null>(null);
   const [sound, setSound] = useState<Audio.Sound>();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { width } = useWindowDimensions();
   const [selectedAudio, setSelectedAudio] = useState<string>('01');
   const [audioOptions] = useState<AudioOption[]>([
     { id: '01', name: 'Abdullah Al-Juhany', url: '' },
@@ -46,7 +63,7 @@ export default function SurahDetailScreen() {
   ]);
 
   useEffect(() => {
-    fetchSurahDetail();
+    fetchTafsirDetail();
     return () => {
       if (sound) {
         sound.unloadAsync();
@@ -54,22 +71,22 @@ export default function SurahDetailScreen() {
     };
   }, [id]);
 
-  const fetchSurahDetail = async () => {
+  const fetchTafsirDetail = async () => {
     try {
-      const response = await fetch(`https://equran.id/api/v2/surat/${id}`);
+      const response = await fetch(`https://equran.id/api/v2/tafsir/${id}`);
       const data = await response.json();
-      setSurahDetail(data.data);
+      setTafsirDetail(data.data);
     } catch (error) {
-      console.error('Error fetching surah detail:', error);
+      console.error('Error fetching tafsir detail:', error);
     }
   };
 
   async function loadSound() {
-    if (surahDetail?.audioFull[selectedAudio] && !sound) {
+    if (tafsirDetail?.audioFull[selectedAudio] && !sound) {
       setIsLoading(true);
       try {
         const { sound: newSound } = await Audio.Sound.createAsync(
-          { uri: surahDetail.audioFull[selectedAudio] },
+          { uri: tafsirDetail.audioFull[selectedAudio] },
           { shouldPlay: false }
         );
         setSound(newSound);
@@ -108,14 +125,13 @@ export default function SurahDetailScreen() {
       await sound.setPositionAsync(0);
     }
   }
-
   const baseStyle = {
     fontSize: 16,
     color: '#4A148C',
     lineHeight: 24,
   };
 
-  if (!surahDetail) {
+  if (!tafsirDetail) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading...</Text>
@@ -141,14 +157,14 @@ export default function SurahDetailScreen() {
 
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.card}>
-          <Text style={styles.title}>{surahDetail.nama}</Text>
-          <Text style={styles.arabicTitle}>{surahDetail.namaLatin}</Text>
+          <Text style={styles.title}>{tafsirDetail.nama}</Text>
+          <Text style={styles.arabicTitle}>{tafsirDetail.namaLatin}</Text>
           <View style={styles.divider} />
           
           <View style={styles.infoContainer}>
-            <Text style={styles.infoText}>Arti: {surahDetail.arti}</Text>
-            <Text style={styles.infoText}>Jumlah Ayat: {surahDetail.jumlahAyat}</Text>
-            <Text style={styles.infoText}>Diturunkan: {surahDetail.tempatTurun}</Text>
+            <Text style={styles.infoText}>Arti: {tafsirDetail.arti}</Text>
+            <Text style={styles.infoText}>Jumlah Ayat: {tafsirDetail.jumlahAyat}</Text>
+            <Text style={styles.infoText}>Diturunkan: {tafsirDetail.tempatTurun}</Text>
           </View>
 
           <View style={styles.audioSelectorContainer}>
@@ -203,12 +219,51 @@ export default function SurahDetailScreen() {
           </View>
 
           <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionTitle}>Keterangan:</Text>
-            <RenderHtml
-              contentWidth={width}
-              source={{ html: surahDetail.deskripsi }}
-              baseStyle={baseStyle}
-            />
+              <Text style={styles.descriptionTitle}>Keterangan:</Text>
+                <RenderHtml
+                  contentWidth={width}
+                  source={{ html: tafsirDetail.deskripsi }}
+                  baseStyle={baseStyle}
+                />
+          </View>
+
+          <View style={styles.tafsirContainer}>
+            <Text style={styles.tafsirTitle}>Tafsir Per Ayat:</Text>
+            {tafsirDetail.tafsir.map((item, index) => (
+              <View key={index} style={styles.tafsirItem}>
+                <Text style={styles.ayatNumber}>Ayat {item.ayat}</Text>
+                <Text style={styles.tafsirText}>{item.teks}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.navigationContainer}>
+            {tafsirDetail.suratSebelumnya && (
+              <TouchableOpacity 
+                style={styles.navButton}
+                onPress={() => tafsirDetail.suratSebelumnya && router.push(`/tafsir/${tafsirDetail.suratSebelumnya.nomor}`)}
+              >
+                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+                <View>
+                  <Text style={styles.navLabel}>Sebelumnya</Text>
+                  <Text style={styles.navText}>{tafsirDetail.suratSebelumnya.namaLatin}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            {tafsirDetail.suratSelanjutnya && (
+              <TouchableOpacity 
+                style={[styles.navButton, styles.navButtonRight]}
+                onPress={() => tafsirDetail.suratSelanjutnya && router.push(`/tafsir/${tafsirDetail.suratSelanjutnya.nomor}`)}
+              >
+                <View>
+                  <Text style={[styles.navLabel, styles.navLabelRight]}>Selanjutnya</Text>
+                  <Text style={[styles.navText, styles.navTextRight]}>
+                    {tafsirDetail.suratSelanjutnya.namaLatin}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -244,45 +299,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 15,
     elevation: 5,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'rgba(126, 87, 194, 0.8)',
-  },
-  backButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4A148C',
-    textAlign: 'center',
-  },
-  arabicTitle: {
-    fontSize: 32,
-    color: '#7E57C2',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#7E57C2',
-    marginVertical: 15,
-  },
-  infoContainer: {
-    backgroundColor: 'rgba(126, 87, 194, 0.1)',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  infoText: {
-    fontSize: 16,
-    color: '#4A148C',
-    marginBottom: 5,
   },
   audioSelectorContainer: {
     backgroundColor: 'rgba(126, 87, 194, 0.1)',
@@ -330,8 +346,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
   },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(126, 87, 194, 0.8)',
+  },
+  backButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4A148C',
+    textAlign: 'center',
+  },
+  arabicTitle: {
+    fontSize: 32,
+    color: '#7E57C2',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#7E57C2',
+    marginVertical: 15,
+  },
+  infoContainer: {
+    backgroundColor: 'rgba(126, 87, 194, 0.1)',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#4A148C',
+    marginBottom: 5,
+  },
   descriptionContainer: {
-    marginTop: 15,
+    marginBottom: 20,
   },
   descriptionTitle: {
     fontSize: 18,
@@ -343,6 +398,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4A148C',
     lineHeight: 24,
+  },
+  tafsirContainer: {
+    marginTop: 20,
+  },
+  tafsirTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4A148C',
+    marginBottom: 15,
+  },
+  tafsirItem: {
+    backgroundColor: 'rgba(126, 87, 194, 0.1)',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  ayatNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#7E57C2',
+    marginBottom: 8,
+  },
+  tafsirText: {
+    fontSize: 16,
+    color: '#4A148C',
+    lineHeight: 24,
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#7E57C2',
+    padding: 12,
+    borderRadius: 10,
+    flex: 1,
+    marginRight: 8,
+  },
+  navButtonRight: {
+    marginRight: 0,
+    marginLeft: 8,
+    justifyContent: 'flex-end',
+  },
+  navLabel: {
+    fontSize: 12,
+    color: '#E1BEE7',
+  },
+  navLabelRight: {
+    textAlign: 'right',
+  },
+  navText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  navTextRight: {
+    textAlign: 'right',
   },
   loadingText: {
     color: '#FFFFFF',

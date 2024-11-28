@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome } from '@expo/vector-icons';
 
 interface Surah {
   nomor: number;
@@ -44,19 +45,34 @@ export default function AlQuranScreen() {
   }, []);
 
   const renderSurahItem = ({ item }: { item: Surah }) => (
-    <TouchableOpacity 
-      style={styles.card} 
-      onPress={() => router.push(`/(tabs)/alquran/${item.nomor}`)}
-    >
-      <View style={styles.iconContainer}>
-        <Text style={styles.surahNumber}>{item.nomor}</Text>
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.iconContainer}>
+          <Text style={styles.surahNumber}>{item.nomor}</Text>
+        </View>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>{item.namaLatin}</Text>
+          <Text style={styles.cardSubtitle}>{item.arti} • {item.jumlahAyat} Ayat</Text>
+        </View>
+        <Text style={styles.arabicName}>{item.nama}</Text>
       </View>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.namaLatin}</Text>
-        <Text style={styles.cardSubtitle}>{item.arti} • {item.jumlahAyat} Ayat</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => router.push(`/(tabs)/alquran/${item.nomor}`)}
+        >
+          <FontAwesome name="play-circle" size={20} color="#7E57C2" />
+          <Text style={styles.buttonText}>Audio</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => router.push(`/(tabs)/tafsir/${item.nomor}`)}
+        >
+          <FontAwesome name="book" size={20} color="#7E57C2" />
+          <Text style={styles.buttonText}>Audio & Tafsir</Text>
+        </TouchableOpacity>
       </View>
-      <Text style={styles.arabicName}>{item.nama}</Text>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -149,13 +165,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 16,
     marginBottom: 12,
     borderRadius: 15,
     elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   iconContainer: {
     width: 40,
@@ -187,5 +205,27 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#7E57C2',
     marginLeft: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(126, 87, 194, 0.2)',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(126, 87, 194, 0.1)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  buttonText: {
+    color: '#7E57C2',
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

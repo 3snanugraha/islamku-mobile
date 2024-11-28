@@ -107,7 +107,7 @@ export default function StartScreen() {
         onPress={() => handleGetStarted('/doa')} // Rute ke halaman doa
       >
         <MaterialCommunityIcons name="chevron-right-circle" size={24} color="#FFF" />
-        <Text style={styles.buttonText}>Yuk Masuk</Text>
+        <Text style={styles.buttonText}>Mulai</Text>
       </TouchableOpacity>
     </View>
   );
