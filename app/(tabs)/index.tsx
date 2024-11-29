@@ -23,7 +23,7 @@ export default function LayarMenuUtama() {
         <View style={styles.headerContent}>
           <MaterialCommunityIcons name="mosque" size={48} color="#FFF" />
           <View>
-            <Text style={styles.title}>Panduan Muslim</Text>
+            <Text style={styles.title}>Islamku Digital</Text>
             <Text style={styles.subtitle}>Teman Islami Sehari-hari</Text>
           </View>
         </View>
@@ -31,7 +31,44 @@ export default function LayarMenuUtama() {
       </View>
 
       <View style={styles.menuContainer}>
+      {/* Menu untuk al-Qur'an */}
+      <View style={styles.menuRow}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => handlePress('bacaquran')}
+          >
+            <LinearGradient
+              colors={['#9575CD', '#7E57C2']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.menuGradient}
+            >
+              <MaterialCommunityIcons name="book-open-page-variant" size={40} color="#FFF" />
+              <Text style={styles.menuText}>Baca Al-Qur'an & Terjemahannya</Text>
+              <Text style={styles.menuDescription}>Baca Al-Qur'an dengan Terjemahannya</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => handlePress('alquran')}
+          >
+            <LinearGradient
+              colors={['#9575CD', '#7E57C2']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.menuGradient}
+            >
+              <MaterialCommunityIcons name="book-music" size={40} color="#FFF" />
+              <Text style={styles.menuText}>Audio Al-Qur'an & Tafsir</Text>
+              <Text style={styles.menuDescription}>Dengarkan bacaan yang indah dengan tafsir</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* Doa dan Asma'ul Husna */}
         <View style={styles.menuRow}>
+          
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => handlePress('doa')}
@@ -49,58 +86,6 @@ export default function LayarMenuUtama() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => handlePress('dzikr')}
-          >
-            <LinearGradient
-              colors={['#9575CD', '#7E57C2']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
-              <MaterialCommunityIcons name="hand-heart" size={40} color="#FFF" />
-              <Text style={styles.menuText}>Dzikir & Tasbih</Text>
-              <Text style={styles.menuDescription}>Selalu mengingat Allah SWT</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.menuRow}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => handlePress('alquran')}
-          >
-            <LinearGradient
-              colors={['#9575CD', '#7E57C2']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
-              <MaterialCommunityIcons name="book-music" size={40} color="#FFF" />
-              <Text style={styles.menuText}>Audio Al-Qur'an & Tafsir</Text>
-              <Text style={styles.menuDescription}>Dengarkan bacaan yang indah dengan tafsir</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => handlePress('bacaquran')}
-          >
-            <LinearGradient
-              colors={['#9575CD', '#7E57C2']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
-              <MaterialCommunityIcons name="book-open-page-variant" size={40} color="#FFF" />
-              <Text style={styles.menuText}>Baca Al-Qur'an & Terjemahannya</Text>
-              <Text style={styles.menuDescription}>Baca Al-Qur'an dengan Terjemahannya</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.menuRow}>
-          <TouchableOpacity
               style={styles.menuItem}
               onPress={() => handlePress('asmaul')}
             >
@@ -115,6 +100,28 @@ export default function LayarMenuUtama() {
                 <Text style={styles.menuDescription}>99 Nama Allah Yang Maha Indah</Text>
               </LinearGradient>
             </TouchableOpacity>
+
+        </View>
+
+
+
+        <View style={styles.menuRow}>
+          {/* Dizkr */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => handlePress('dzikr')}
+          >
+            <LinearGradient
+              colors={['#9575CD', '#7E57C2']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.menuGradient}
+            >
+              <MaterialCommunityIcons name="hand-heart" size={40} color="#FFF" />
+              <Text style={styles.menuText}>Dzikir & Tasbih</Text>
+              <Text style={styles.menuDescription}>Selalu mengingat Allah SWT</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
             <TouchableOpacity
             style={styles.menuItem}

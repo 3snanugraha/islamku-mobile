@@ -132,6 +132,23 @@ export default function QuranDetailScreen() {
     }
   };
 
+    const handleQariChange = async (itemValue: string) => {
+      // Stop current full surah audio if playing
+      if (currentAudio) {
+        await currentAudio.stopAsync();
+        await currentAudio.unloadAsync();
+      }
+      
+      // Reset all audio states
+      setCurrentAudio(undefined);
+      setIsPlayingFull(false);
+      setPlayingAyat(null);
+      
+      // Update selected qari
+      setSelectedQari(itemValue);
+    };
+    
+
   const handleAyatAudio = async (ayat: any, qariId: string = "01") => {
     try {
       // Stop and unload any existing audio
@@ -221,16 +238,7 @@ export default function QuranDetailScreen() {
             <Text style={styles.ayatSelectorTitle}>Pilih Qari:</Text>
             <Picker
               selectedValue={selectedQari}
-              onValueChange={async (itemValue) => {
-                // Stop all audio when changing Qari
-                if (currentAudio) {
-                  await currentAudio.stopAsync();
-                  await currentAudio.unloadAsync();
-                }
-                setIsPlayingFull(false);
-                setPlayingAyat(null);
-                setSelectedQari(itemValue);
-              }}
+              onValueChange={handleQariChange}
               style={styles.picker}
             >
               {qariOptions.map((qari) => (
