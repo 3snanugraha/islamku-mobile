@@ -1,0 +1,1250 @@
+{
+	"info": {
+		"_postman_id": "08ebcf3f-bcd5-467c-a7cd-3446b680b2e5",
+		"name": "API Muslim v2 - by myQuran",
+		"description": "Sumber API Islamic yang bebas dipergunakan segala keperluan: hobi, personal, pekerjaan, komersial, dan lainnya..\n\nAPI untuk mempermudah developer Muslim dalam mengembangkan aplikasinya untuk kebermanfaatan seluruh umat islam Indonesia (sedunia - seakhirat)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14750118"
+	},
+	"item": [
+		{
+			"name": "Pendahuluan",
+			"item": [
+				{
+					"name": "Lisensi",
+					"item": [],
+					"description": "Bebas untuk segala keperluan, baik umum, pelajar/mahasiswa (pendidikan), ataupun profesional.\n\nBebas dipergunakan, tidak perlu izin terlebih dahulu bisa langsung dipakai.\n\n<img src=\"https://content.pstmn.io/90a6ac08-b0e4-4686-a01f-cd329d9588fc/YXBwcm92ZWQucG5n\" alt=\"\">\n\n### Penyangkalan\n\nSegala data maupun kekeliruan di dalamnya, bukan merupakan tanggung jawab kami sebagai pengembang API Muslim ini.\n\nSegala resiko terhadap penggunakan API ini, baik secara langsung maupun tidak langsung (aplikasi yang diakses oleh user-user lainnya) ditanggung sendiri oleh pengembang. Tidak ada hubungannya dengan pihak kami, kecuali telah menjalin kerjasama secara resmi.\n\nSehingga tidak dapat menuntut ataupun meminta ganti rugi kepada kami pengembang API myQuran ini jika terjadi apa-apa.\n\n**Dengan mengakses atau menggunakan API ini, berarti Anda setuju dengan pernyataan ini.**"
+				},
+				{
+					"name": "Limit",
+					"item": [],
+					"description": "Tidak (belum) ada limitasi.\n\nJika ada trouble, dapat menghubungi kami.\n\n<img src=\"https://content.pstmn.io/bbaacb83-86f9-404f-b38c-1947b086585f/ZGF0YS1hbmFseXRpY3MucG5n\" alt=\"\">"
+				},
+				{
+					"name": "Kontak",
+					"item": [
+						{
+							"name": "Team",
+							"item": [],
+							"description": "Hanya untuk keperluan personifikasi tugas dan sharing:\n\n- **Lead**\n    - [Hasanudin H Syafaat](https://t.me/hasanudinhs)\n    - 📧 [banghasan@gmail.com](https://mailto:banghasan@gmail.com)\n- **Support**:\n    - [Aghisna12](https://t.me/Aghisna12)\n    - [Radya](https://t.me/error_log)\n\n_Bukan untuk support pengembangan aplikasi Anda yak...  \nKami bukan support center yang mendapatkan gaji dan selalu ready untuk Anda  \nKami hanya volunteer._\n\n<img src=\"https://content.pstmn.io/9db3989e-6350-4393-bd7f-59de639a3e27/bGV0dGVyYm94LnBuZw==\">\n\n**Jika ada masukan yang membangun silakan kontak kami! ^^**"
+						}
+					],
+					"description": "<img src=\"https://content.pstmn.io/d95b2c61-4a0f-4088-9938-db9faf8b5455/dGVsZWdyYW0ucG5n\">\n\nSaran dan masukan dapat menghubungi kami, melalui diskusi pada:\n\n- **Telegram** Group _ReDev API myQuran_ [https://t.me/reDevAPI](https://t.me/reDevAPI)\n    \n\nJangan lupa perkenalkan diri terlebih dahulu ya, nama, asal, profesi, tujuan penggunaan, kemudian saran dan masukannya.\n\nAgar kami lebih mudah mengenali, dan lebih akrab tentunya ^^\n\n<img src=\"https://content.pstmn.io/7881ad28-d945-486e-af01-da0602cdc222/Y29tbXVuaWNhdGUucG5n\">"
+				},
+				{
+					"name": "Last Update",
+					"item": [],
+					"description": "Dokumen dan atau API terakhir diupdate:\n\n- 11 Ramadhan 1445H\n- 21 Maret 2024 M\n    \n\n<img src=\"https://content.pstmn.io/42f6317f-36f4-4c82-b5de-d9fa8b5037b2/YWR6YW4ucG5n\" alt=\"\">"
+				}
+			],
+			"description": "API v2 ini adalah update dan pengembangan dari versi sebelumnya.\n\n> API v1 telah down karena gagal payment, mohon maaf atas ketidaknyamanannya. \n  \n\nMerupakan lanjutan dari v1 yang saat ini sudah tidak dapat diakses, dan harus dibuild kembali.\n\n<img src=\"https://content.pstmn.io/88412325-e901-4d95-a77b-cc06da0871ad/aGFuZHBob25lLnBuZw==\">\n\n#### Data\n\nDiambil dari berbagai sumber.\n\nData Sholat bersumber dari Kemenag RI yang discraping ulang, agar mudah diakses oleh siapapun."
+		},
+		{
+			"name": "API",
+			"item": [
+				{
+					"name": "Base URL",
+					"item": [
+						{
+							"name": "Versi",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}",
+									"host": [
+										"{{base_url}}{{version}}"
+									]
+								},
+								"description": "- `v1/` ~~sudah tidak tersedia~~\n    \n- `v2/` adalah versi saat ini yang tersedia."
+							},
+							"response": []
+						}
+					],
+					"description": "- Base URL `https://api.myquran.com/`\n    \n\nAda beberasa base URL lain (sebagai cadangan), jika membutuhkan silakan kontak kami."
+				},
+				{
+					"name": "Result",
+					"item": [],
+					"description": "Semua respon adalah dalam format `json`.\n\n## status\n\n- berisi `true`, jika request dan data berhasil disajikan\n- berisi `false`, jika request berhasil tapi data tidak ada\n- berisi kode HTTP error, jika salah rute atau path URI.\n    \n\n## request\n\nInformasi data request yang diminta client\n\n## info\n\nBerisi informasi tambahan atas hasil request\n\n## data\n\nJika `status` bernilai `true`, maka field `data` akan tersedia.\n\nBerisi variasi data sesuai request yang diminta.\n\n## message\n\nJika `status` bernilai `false`, maka field `message` akan tersedia.\n\n`message` adalah pesan error dari `status`."
+				}
+			],
+			"description": "Secara keseluruhan, menggunakan:\n\n`base_url` + `versi`\n\nSehingga format dasarnya adalah:\n\n`https://api.myquran.com/v2/`\n\n<img src=\"https://content.pstmn.io/51d33dd9-207c-40e5-8c1f-bc09647cae77/YXBpLnBuZw==\" alt=\"\">"
+		},
+		{
+			"name": "Sholat",
+			"item": [
+				{
+					"name": "Lokasi",
+					"item": [
+						{
+							"name": "Pencarian",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}sholat/kota/cari/:kota",
+									"host": [
+										"{{base_url}}{{version}}sholat"
+									],
+									"path": [
+										"kota",
+										"cari",
+										":kota"
+									],
+									"variable": [
+										{
+											"key": "kota",
+											"value": "kediri",
+											"description": "bertipe string"
+										}
+									]
+								},
+								"description": "#### Format\n\n`/sholat/kota/cari/:keyword`\n\n##### Contoh\n\n`/sholat/kota/cari/kediri`\n\n##### Contoh Hasil\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/sholat/kota/cari/kediri\",\n        \"keyword\": \"kediri\"\n    },\n    \"data\": [\n        {\n            \"id\": \"1609\",\n            \"lokasi\": \"KAB. KEDIRI\"\n        },\n        {\n            \"id\": \"1632\",\n            \"lokasi\": \"KOTA KEDIRI\"\n        }\n    ]\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "ID Kota",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}sholat/kota/:id",
+									"host": [
+										"{{base_url}}{{version}}sholat"
+									],
+									"path": [
+										"kota",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1632",
+											"description": "bertipe integer, terdiri atas 4 digit"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan informasi kota berdasarkan id kota.\n\n#### Format\n\n`/sholat/kota/:id`\n\n##### Contoh\n\n`/sholat/kota/1632`\n\n**Contoh Hasil**\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/sholat/kota/1632\"\n    },\n    \"data\": {\n        \"id\": \"1632\",\n        \"lokasi\": \"KOTA KEDIRI\"\n    }\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "Semua Kota",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}sholat/kota/semua",
+									"host": [
+										"{{base_url}}{{version}}sholat"
+									],
+									"path": [
+										"kota",
+										"semua"
+									]
+								},
+								"description": "Untuk mendapatkan semua data kota.\n\n#### Format\n\n`/sholat/kota/semua`\n\n**Keterangan**\n\nTidak ada parameter lain.\n\n**Result**\n\n```\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/sholat/kota/semua\"\n    },\n    \"data\": [\n        {\n            \"id\": \"1001\",\n            \"lokasi\": \"KAB. LAMPUNG TENGAH\"\n        },\n        {\n            \"id\": \"1002\",\n            \"lokasi\": \"KAB. LAMPUNG UTARA\"\n        },\n        ...\n\n ```"
+							},
+							"response": []
+						}
+					],
+					"description": "Untuk mendapatkan id atau kode lokasi. Baik kota maupun kabupaten.\n\n_Penyebutan_ _**kota**_ _bisa menjadi umum untuk kota atau kabupaten._\n\n> Untuk menghindari kerancuan hal tersebut, maka pada dokumentasi dan result data, baik kota atau kabupaten, kami menggunakan penyebutan lokasi."
+				},
+				{
+					"name": "Jadwal",
+					"item": [
+						{
+							"name": "Harian",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}sholat/jadwal/:kota/:date",
+									"host": [
+										"{{base_url}}{{version}}sholat"
+									],
+									"path": [
+										"jadwal",
+										":kota",
+										":date"
+									],
+									"variable": [
+										{
+											"key": "kota",
+											"value": "1632",
+											"description": "diisi dengan angka, 4 digit"
+										},
+										{
+											"key": "date",
+											"value": "2024-06-23",
+											"description": "string dalam format yyyy-mm-dd"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan jadwal waktu sholat harian.\n\n> terdapat 2 format yang berbeda, namun memiliki hasil yang sama \n  \n\n#### Format:\n\n- `/sholat/jadwal/:kota/:tahun/:bulan/:tanggal`\n- `/sholat/jadwal/:kota/:yyyy-mm-dd`\n    \n\nContoh:\n\n- `/sholat/jadwal/1632/2024/06/23`\n- `/sholat/jadwal/1632/2024-06-23`\n    \n\n**Keterangan**\n\n- `kota` diisi dengan angka, 4 digit\n    \n- `tahun` diisi dengan angka, 4 digit\n- `bulan` diisi dengan angka, 1 atau 2 digit.\n- `tanggal` diisi dengan angka, 1 atau 2 digit.\n    \n\n**Result**\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/sholat/jadwal/1632/2024/06/23\"\n    },\n    \"data\": {\n        \"id\": 1632,\n        \"lokasi\": \"KOTA KEDIRI\",\n        \"daerah\": \"JAWA TIMUR\",\n        \"jadwal\": {\n            \"tanggal\": \"Minggu, 23/06/2024\",\n            \"imsak\": \"04:13\",\n            \"subuh\": \"04:23\",\n            \"terbit\": \"05:41\",\n            \"dhuha\": \"06:10\",\n            \"dzuhur\": \"11:38\",\n            \"ashar\": \"14:57\",\n            \"maghrib\": \"17:28\",\n            \"isya\": \"18:42\",\n            \"date\": \"2024-06-23\"\n        }\n    }\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "Bulanan",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}sholat/jadwal/:kota/:tahun/:bulan",
+									"host": [
+										"{{base_url}}{{version}}sholat"
+									],
+									"path": [
+										"jadwal",
+										":kota",
+										":tahun",
+										":bulan"
+									],
+									"variable": [
+										{
+											"key": "kota",
+											"value": "1632",
+											"description": "id kota, bertipe integer, 4 digit"
+										},
+										{
+											"key": "tahun",
+											"value": "2024",
+											"description": "diisi angka, 4 digit"
+										},
+										{
+											"key": "bulan",
+											"value": "06",
+											"description": "diisi angka, 2 digit"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan jadwal waktu sholat dalam periode bulanan.\n\n#### Format:\n\n- `/sholat/jadwal/:idkota/:tahun/:bulan`\n    \n\n##### Contoh:\n\n- `/sholat/jadwal/1632/2024/06`\n    \n\n##### Hasil\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/sholat/jadwal/1632/2024/06\"\n    },\n    \"data\": {\n        \"id\": 1632,\n        \"lokasi\": \"KOTA KEDIRI\",\n        \"daerah\": \"JAWA TIMUR\",\n        \"jadwal\": [\n            {\n                \"tanggal\": \"Sabtu, 01/06/2024\",\n                \"imsak\": \"04:08\",\n                \"subuh\": \"04:18\",\n                \"terbit\": \"05:36\",\n                \"dhuha\": \"06:05\",\n                \"dzuhur\": \"11:33\",\n                \"ashar\": \"14:53\",\n                \"maghrib\": \"17:24\",\n                \"isya\": \"18:38\",\n                \"date\": \"2024-06-01\"\n            },\n            ....\n\n ```"
+							},
+							"response": []
+						}
+					],
+					"description": "Untuk mendapatkan jadwal waktu sholat dan waktu lainnya."
+				}
+			],
+			"description": "> _Adalah Kewajiban Yang Sudah Ditentukan Waktunya..._ \n  \n\n<img src=\"https://content.pstmn.io/3831cce3-eea6-40ef-973f-e259422c54f3/c3VqdWQucG5n\" alt=\"\">\n\nDalam hal ini, API informasi atas waktu-waktu sholat pada kota-kota besar di Indonesia.\n\n## Sumber\n\nInformasi waktu sholat ini, diambil dari situs [https://bimasislam.kemenag.go.id/jadwalshalat](https://bimasislam.kemenag.go.id/jadwalshalat).\n\nDiambil (dengan metode scraping) per `27 Desember 2023`.\n\n## Informasi\n\nData yang tersedia, dari Januari 2024 sampai Desember 2030.\n\nHanya tersedia untuk kota-kota besar di Indonesia. Kota lainnya, dapat disesuaikan sendiri sesuai plus minus waktu setempat.\n\n_Jika terdapat adjustment dari Kemenag RI, mohon bantu dikabari kepada kami agar dapat disesuaikan kembali._"
+		},
+		{
+			"name": "Kalender",
+			"item": [
+				{
+					"name": "Hijriyah",
+					"item": [
+						{
+							"name": "Today",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{cal}}hijr/?adj=-1",
+									"host": [
+										"{{base_url}}{{version}}{{cal}}hijr"
+									],
+									"path": [
+										""
+									],
+									"query": [
+										{
+											"key": "adj",
+											"value": "-1",
+											"description": "(option) untuk melakukan adjustment. Tipe: integer (sign). Default adalah -1."
+										}
+									]
+								},
+								"description": "Menampilkan posisi tanggal hijriyah sekarang waktu server (Zona WIB).\n\n### Format\n\n- `/cal/hijr`\n- `/cal/hijr/:adj`\n- `/cal/hijr/?adj=:number`\n    \n\n##### Contoh Query:\n\n- `https://api.myquran.com/v2/cal/hijr`\n- `https://api.myquran.com/v2/cal/hijr/-1`\n- `https://api.myquran.com/v2/cal/hijr?adj=-1`\n    \n\n##### Contoh Hasil:\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/cal/hijr\",\n        \"date\": \"2024-03-08\",\n        \"adj\": -1\n    },\n    \"data\": {\n        \"date\": [\n            \"Jum'at\",\n            \"27 Syaban 1445 H\",\n            \"08-03-2024\"\n        ],\n        \"num\": [\n            6,\n            8,\n            3,\n            2024,\n            27,\n            8,\n            1445\n        ]\n    }\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "Date",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{cal}}hijr/:date?adj=-1",
+									"host": [
+										"{{base_url}}{{version}}{{cal}}hijr"
+									],
+									"path": [
+										":date"
+									],
+									"query": [
+										{
+											"key": "adj",
+											"value": "-1",
+											"description": "(option) untuk melakukan adjustment. Tipe: integer (sign). Default adalah -1."
+										}
+									],
+									"variable": [
+										{
+											"key": "date",
+											"value": "2024-06-23",
+											"description": "tanggal, dalam format yyyy-MM-dd"
+										}
+									]
+								},
+								"description": "Menampilkan posisi tanggal hijriyah sekarang waktu server (Zona WIB).\n\n### Format\n\n- `/cal/hijr/:date`\n- `/cal/hjir/:date/:adj`\n- `/cal/hijr/date?adj=:number`\n    \n\n##### Contoh Query:\n\n- `https://api.myquran.com/v2/cal/hijr/2024-06-23`\n- `https://api.myquran.com/v2/cal/hijr/2024-06-23/-1`\n- `https://api.myquran.com/v2/cal/hijr/2024-06-23/adj=-1`\n    \n\n##### Contoh Hasil\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/cal/hijr/2024-06-23\",\n        \"date\": \"2024-06-23\",\n        \"adj\": -1\n    },\n    \"data\": {\n        \"date\": [\n            \"Ahad\",\n            \"16 Dzulhijjah 1445 H\",\n            \"23-06-2024\"\n        ],\n        \"num\": [\n            1,\n            23,\n            6,\n            2024,\n            16,\n            12,\n            1445\n        ]\n    }\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "Days",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{cal}}list/days",
+									"host": [
+										"{{base_url}}{{version}}{{cal}}list"
+									],
+									"path": [
+										"days"
+									]
+								},
+								"description": "Untuk mendapatkan daftar index hari"
+							},
+							"response": []
+						},
+						{
+							"name": "Months",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{cal}}list/months",
+									"host": [
+										"{{base_url}}{{version}}{{cal}}list"
+									],
+									"path": [
+										"months"
+									]
+								},
+								"description": "Untuk mendapatkan daftar index bulan"
+							},
+							"response": []
+						}
+					],
+					"description": "<img src=\"https://content.pstmn.io/28f66206-fef2-4177-8185-1bd3699aba2a/bW9vbi5wbmc=\">\n\nMengkonversi kalendar masehi ke hijriyah.\n\nDefault nilai **adjust** adalah `-1`"
+				}
+			],
+			"description": "<img src=\"https://content.pstmn.io/0cc434ba-07f4-477c-8a5d-73cba6ecddb8/Y2FsZW5kYXIucG5n\" alt=\"\">\n\nKonversi Kalender / Tanggalan"
+		},
+		{
+			"name": "alQuran",
+			"item": [
+				{
+					"name": "Surat",
+					"item": [
+						{
+							"name": "nomor",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}surat/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}surat"
+									],
+									"path": [
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "1",
+											"description": "nomor surat, bertipe integer\nrange 1-114"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan informasi per surat berdasarkan nomor surat.\n\n#### Format\n\n- `/quran/surat/:nomorSurat`\n    \n\n##### Contoh:\n\n- `/quran/surat/1`"
+							},
+							"response": []
+						},
+						{
+							"name": "semua",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}surat/semua",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}surat"
+									],
+									"path": [
+										"semua"
+									]
+								},
+								"description": "Mendapatkan informasi semua surat dalam alQuran\n\n#### Format\n\n- `/quran/surat/semua`\n- `/quran/surat/all`"
+							},
+							"response": []
+						}
+					],
+					"description": "Menampilkan Informasi Surat pada AlQuran"
+				},
+				{
+					"name": "Ayat",
+					"item": [
+						{
+							"name": "index",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "6236",
+											"description": "nomor index bertipe integer\nrange 1-6236"
+										}
+									]
+								},
+								"description": "Menampilkan ayat alQuran berdasarkan nomor indeks.\n\nMisalnya, albaqarah ayat 1 memiliki nomor index 7.\n\n#### Format:\n\n- `/quran/ayat/:nomor`\n    \n\n##### **Contoh**:\n\n- `/quran/ayat/6236`\n    \n\nUntuk menampilkan ayat ke 6 pada surat An Naas (`QS 114:6`)"
+							},
+							"response": []
+						},
+						{
+							"name": "surat ayat",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/:surat/:ayat",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										":surat",
+										":ayat"
+									],
+									"variable": [
+										{
+											"key": "surat",
+											"value": "1",
+											"description": "nomor surat, bertipe integer\nrange 1-114"
+										},
+										{
+											"key": "ayat",
+											"value": "1",
+											"description": "nomor ayat, bertipe integer\nrange 1 sampai dengan max jumlah ayat sesuai surat"
+										}
+									]
+								},
+								"description": "Menampikan ayat berdasarkan nomor surat dan nomor ayat.\n\n#### Format\n\n- `/quran/ayat/:surat/:ayat`\n    \n\n##### Keterangan\n\n- `surat` (int) dengan nilai min 1, dan max 114\n    \n- `ayat` (int) berisi nomor ayat yang akan ditampilkan\n    \n\n##### Contoh\n\n- `/quran/ayat/1/1`"
+							},
+							"response": []
+						},
+						{
+							"name": "sepanjang",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/:surat/:ayat/:panjang",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										":surat",
+										":ayat",
+										":panjang"
+									],
+									"variable": [
+										{
+											"key": "surat",
+											"value": "2",
+											"description": "nomor surat, bertipe integer\nrange 1-114"
+										},
+										{
+											"key": "ayat",
+											"value": "1",
+											"description": "nomor ayat dimulai, bertipe integer\nmaksimal jangkauan saat ini adalah 30"
+										},
+										{
+											"key": "panjang",
+											"value": "5"
+										}
+									]
+								},
+								"description": "#### Format\n\n- `/quran/ayat/:surat/:ayat/:panjang`\n    \n\n##### Contoh:\n\n- `/quran/ayat/2/1/5`\n    \n\nUntuk menampilkan surat ke 2 (alBaqarah) mulai dari ayat 1 sepanjang 5 ayat (ayat 1 - 5)."
+							},
+							"response": []
+						},
+						{
+							"name": "sampai dengan",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/:surat/:range",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										":surat",
+										":range"
+									],
+									"variable": [
+										{
+											"key": "surat",
+											"value": "2",
+											"description": "nomor surat, bertipe integer\ndengan range 1-114"
+										},
+										{
+											"key": "range",
+											"value": "3-5",
+											"description": "nomor ayat jangkauan, dengan tanda - (minus)\nmisal akan ditampilkan ayat 3 sampai dengan 5"
+										}
+									]
+								},
+								"description": "#### Format\n\n- `/quran/ayat/:surat/:noAyatStart-:noAyatEnd`\n    \n\n##### Keterangan:\n\n- `noAyatStart` (int) nomor ayat dimulai\n- `noAyatEnd` (int) nomor ayat berakhir\n    \n\nIngat, ada tanda minus `-` di sini\n\n##### Contoh\n\n`/quran/ayat/2/3-5`\n\nmenampilkan surat ke 2, dari ayat 3 sampai dengan ayat 5"
+							},
+							"response": []
+						},
+						{
+							"name": "acak",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/acak",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										"acak"
+									]
+								},
+								"description": "menampilkan ayat quran secara acak.\n\nberguna untuk quotes harian atau reminder atau hal lainnya.\n\n#### **Format**\n\n- `/quran/ayat/acak`\n- `/quran/ayat/random`\n    \n\n<img src=\"https://content.pstmn.io/517921c7-228e-4928-8263-9a002fe1b13c/c2h1ZmZsZS5wbmc=\">"
+							},
+							"response": []
+						},
+						{
+							"name": "page",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/page/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										"page",
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "1",
+											"description": "nomor halaman, bertipe integer\nrange 1-604"
+										}
+									]
+								},
+								"description": "Menampilkan ayat quran berdasarkan halamannya\n\n#### Format\n\n- `/quran/ayat/page/:nomor`\n    \n\n##### Contoh\n\n- `/quran/ayat/page/1`\n    \n\nuntuk menampilkan ayat alQuran pada halaman 1."
+							},
+							"response": []
+						},
+						{
+							"name": "juz",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/juz/:juz",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										"juz",
+										":juz"
+									],
+									"variable": [
+										{
+											"key": "juz",
+											"value": "1",
+											"description": "nomor juz, bertipe integer\nrange 1-30"
+										}
+									]
+								},
+								"description": "Menampilkan ayat quran berdasarkan juz\n\n#### Format\n\n- `/quran/ayat/juz/:nomor`\n    \n\n##### Keterangan\n\n- `nomor` (int) adalah nomor halaman, minimal `1` dan maksimum adalah `30`\n    \n\n##### Contoh\n\n- `/quran/ayat/juz/1`\n    \n\nuntuk menampilkan seluruh ayat alQuran yang terdapat pada juz 1."
+							},
+							"response": []
+						},
+						{
+							"name": "tema",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/tema/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										"tema",
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "1",
+											"description": "nomor index tema, bertipe integer\nrange 1-1.221"
+										}
+									]
+								},
+								"description": "Menampilkan ayat alQuran berdasarkan tema tertentu\n\n#### Format\n\n- `/quran/ayat/tema/:nomor`\n    \n\n##### **Keterangan**\n\n- `nomor` (int) adalah nomor tema, dengan nilai minimal 1 dan maksimal adalah `1121`\n    \n\n##### Contoh\n\n- `/quran/ayat/tema/1`\n    \n\nuntuk menampilkan tema 1 yakni tentang _Tiga Golongan Manusia dalam Menyikapi Kebenaran Al-Qur’an_"
+							},
+							"response": []
+						},
+						{
+							"name": "browse",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}ayat/browse?page=1&length=10",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}ayat"
+									],
+									"path": [
+										"browse"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1",
+											"description": "Nomor Halaman"
+										},
+										{
+											"key": "length",
+											"value": "10",
+											"description": "Seberapa banyak ayat yang akan ditampilkan. Saat ini maks: 30, default: 10"
+										}
+									]
+								},
+								"description": "Menampilkan ayat dengan mengcustom page, berdasarkan berapa banyak ayat yang akan ditampilkan.\n\n#### Format\n\n- `/quran/ayat/browse`\n- `/quran/ayat/browse?page=:number`\n- `/quran/ayat/browse?page=:number&length=:number`\n    \n\n#### Contoh\n\n- `/quran/ayat/browse`\n- `/quran/ayat/browse?page=2`\n- `/quran/ayat/browse?page=2&length=15`\n    \n\n#### Keterangan\n\n- `totalItems` jumlah ayat keseluruhan\n- `currentPage` halaman saat ini ditampilkan\n- `pageSize` panjang ayat yang ditampilkan per halaman\n- `totalPage` jumlah total keseluruhan halaman\n- `startIndex` id ayat dimulai\n- `endIndex` id ayat terakhir\n    \n\n###### Notes\n\nHasil ayat tetap ditampilkan pada field `data`"
+							},
+							"response": []
+						}
+					],
+					"description": "Menampilkan ayat alQuran dengan berbagai metode sesuai kebutuhan\n\nBase Fitur: `/quran/surat`"
+				},
+				{
+					"name": "Juz",
+					"item": [
+						{
+							"name": "nomor",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}juz/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}juz"
+									],
+									"path": [
+										":nomor"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "1",
+											"description": "nomor juz, bertipe integer\nrange 1-30"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan informasi per juz.\n\n#### Format\n\n- `/quran/juz/:nomor`\n    \n\n##### Contoh:\n\n- `/quran/juz/1`\n    \n\nAkan menampilkan informasi juz 1."
+							},
+							"response": []
+						},
+						{
+							"name": "semua",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}juz/semua",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}juz"
+									],
+									"path": [
+										"semua"
+									]
+								},
+								"description": "Menampilkan keseluruhan informasi juz\n\n#### Format\n\n- `/quran/juz/semua`\n- `/quran/juz/all`"
+							},
+							"response": []
+						}
+					],
+					"description": "Menampilkan informasi juz.\n\nJika ingin menampilkan ayatnya, pergunakan metode `/quran/ayat/juz`"
+				},
+				{
+					"name": "Tema",
+					"item": [
+						{
+							"name": "id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}tema/:id",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}tema"
+									],
+									"path": [
+										":id"
+									],
+									"query": [
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "id tema, bertipe integer\nrange 1-1.121"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan informasi per tema.\n\n#### Format\n\n- `/quran/tema/:id`\n    \n\n##### Contoh:\n\n- `/quran/tema/1`\n    \n\nAkan menampilkan informasi tema 1."
+							},
+							"response": []
+						},
+						{
+							"name": "semua",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{quran}}tema/semua",
+									"host": [
+										"{{base_url}}{{version}}{{quran}}tema"
+									],
+									"path": [
+										"semua"
+									]
+								},
+								"description": "Menampilkan keseluruhan informasi tema yang ada\n\n#### Format\n\n- `/quran/tema/semua`\n- `/quran/tema/all`"
+							},
+							"response": []
+						}
+					],
+					"description": "Menampilkan informasi tema\n\nJika ingin menampilkan ayatnya, pergunakan metode `/quran/ayat/tema`"
+				}
+			],
+			"description": "<img src=\"https://content.pstmn.io/60897a0d-e2b4-4af3-9d00-8519d0c32fe3/cXIuanBn\" alt=\"\">\n\nAl-Qur'an terdiri atas 114 surah, 30 juz dan 6.238 ayat menurut riwayat Hafsh, 6.262 ayat menurut riwayat ad-Dur, atau 6.214 ayat menurut riwayat Warsy. Pada API ini menggunakan `6.236` sesuai cetakan Alquran di Indonesia (dan juga oleh [Kemenag RI](https://kemenag.go.id/opini/jumlah-ayat-alquran-bhjfvi)).\n\nSecara umum, Al-Qur'an terbagi menjadi 30 bagian yang dikenal dengan nama juz. Pembagian juz memudahkan mereka yang ingin menuntaskan pembacaan Al-Qur'an dalam kurun waktu 30 hari. Terdapat pembagian lain yang disebut manzil, yang membagi Al-Qur'an menjadi 7 bagian.\n\n#### Database\n\nFokus utama API ini adalah untuk pengguna yang berbahasa Indonesia.\n\n_Untuk bahasa lain, sepertinya sudah banyak di website lainnya. Namun jika banyak yang request akan kami pertimbangkan._\n\n#### Notes\n\nMohon maaf untuk beberapa field tidak konsisten, kadang menggunakan literasi bahasa indonesia kadang juga menggunakan literasi bahasa inggris.\n\n_Belum sempat dirapiin ^^_"
+		},
+		{
+			"name": "alHadits",
+			"item": [
+				{
+					"name": "Hadits Arbain",
+					"item": [
+						{
+							"name": "base",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}arbain/",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}arbain"
+									],
+									"path": [
+										""
+									]
+								},
+								"description": "Terdapat beberapa sub pilihan untuk menampilkan hadits arbain :\n\n- berdasarkan nomor\n    \n- secara acak\n    \n- tampilkan semuanya"
+							},
+							"response": []
+						},
+						{
+							"name": "nomor",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}arbain/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}arbain"
+									],
+									"path": [
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "1",
+											"description": "nomor hadits arbain, bertipe integer\nrange 1-42"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan hadits arbain berdasarkan nomornya.\n\n### Format\n\n- `/hadits/arbain/:nomor`\n    \n\n##### Contoh\n\n- `/hadits/arbain/1`"
+							},
+							"response": []
+						},
+						{
+							"name": "acak",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}arbain/acak",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}arbain"
+									],
+									"path": [
+										"acak"
+									]
+								},
+								"description": "menampilkan hadits arbain secara acak.\n\nberguna untuk quotes harian atau reminder atau hal lainnya.\n\n#### **Format**\n\n- `/hadits/arbain/acak`\n- `/hadits/arbain/random`\n    \n\n<img src=\"https://content.pstmn.io/517921c7-228e-4928-8263-9a002fe1b13c/c2h1ZmZsZS5wbmc=\">"
+							},
+							"response": []
+						},
+						{
+							"name": "semua",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}arbain/semua",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}arbain"
+									],
+									"path": [
+										"semua"
+									]
+								},
+								"description": "Menampilkan keseluruhan isi hadits arbain dalam format json\n\n#### Format\n\n- `/hadits/arbain/semua`\n- `/hadits/arbain/all`"
+							},
+							"response": []
+						}
+					],
+					"description": "\n<img src=\"https://content.pstmn.io/a9858e81-be42-4d18-8cd1-e5a465a98240/c3Rhci5wbmc=\">\n\n**Arbain Nawawi** atau _Al-Arba'in An-Nawawiyah_ ([Arab](https://id.wikipedia.org/wiki/Bahasa_Arab):**الأربعون النووية**) merupakan kitab yang memuat empat puluh dua [hadits](https://id.wikipedia.org/wiki/Hadits) pilihan yang disusun oleh [Imam Nawawi](https://id.wikipedia.org/wiki/Imam_Nawawi).\n\nMeski bernama Arba’în (berarti 40), kitab ini tak memuat hadits dengan jumlah persis 40, melainkan 42 hadits.\n\nHadits-hadits tersebut berkaitan dengan pilar-pilar dalam agama Islam baik ushul (pokok) maupun furu’ (cabang), serta hadits-hadits yang berkaitan dengan jihad, zuhud, nasihat, adab, niat-niat yang baik dan semacamnya."
+				},
+				{
+					"name": "Bulughul Maram",
+					"item": [
+						{
+							"name": "nomor",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}bm/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}bm"
+									],
+									"path": [
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "nomor",
+											"value": "1597",
+											"description": "bertipe integer, range 1-1597"
+										}
+									]
+								},
+								"description": "Untuk mendapatkan hadits **Bulughul Maram** berdasarkan nomornya.\n\n#### Format\n\n- `/hadits/bm/:nomor`\n    \n\n### **Keterangan**\n\n- `nomor` diisi dengan angka (`int`), minimal 1 dan maksimal 1597\n    \n\nContoh:\n\n- `/hadits/bm/1`"
+							},
+							"response": []
+						},
+						{
+							"name": "acak",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}bm/acak",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}bm"
+									],
+									"path": [
+										"acak"
+									]
+								},
+								"description": "menampilkan hadits **Bulughul Maram** secara acak.\n\nberguna untuk quotes harian atau reminder atau hal lainnya.\n\n**Format**\n\n- `/hadits/bm/acak`\n    \n- `/hadits/bm/random`\n    \n\n<img src=\"https://content.pstmn.io/517921c7-228e-4928-8263-9a002fe1b13c/c2h1ZmZsZS5wbmc=\">"
+							},
+							"response": []
+						}
+					],
+					"description": "<img src=\"https://content.pstmn.io/7cb0e880-50b1-4d4c-b8c5-af0b3b371d26/Yl9tLmpwZw==\">\n\n**Bulughul Maram** atau _Bulugh al-Maram min Adillat al-Ahkam_, disusun oleh Al-Hafizh [Ibnu Hajar Al-Asqalani](https://id.wikipedia.org/wiki/Ibnu_Hajar) (773 H - 852 H).\n\nKitab ini merupakan kitab [hadis](https://id.wikipedia.org/wiki/Hadis) tematik yang memuat hadis-hadis yang dijadikan sumber pengambilan hukum [fikih](https://id.wikipedia.org/wiki/Fikih) (_istinbath_) oleh para ahli fikih. Kitab ini termasuk kitab fikih yang menerima pengakuan global dan juga banyak diterjemahkan di seluruh dunia."
+				},
+				{
+					"name": "Hadits 9 Perawi",
+					"item": [
+						{
+							"name": "perawi",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}perawi/",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}perawi"
+									],
+									"path": [
+										""
+									]
+								},
+								"description": "Mendapatkan informasi perawi, slug, dan total hadits-nya\n\n**Format**\n\n`/hadits/perawi/`"
+							},
+							"response": []
+						},
+						{
+							"name": "hadits",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}/:slug/:nomor",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}"
+									],
+									"path": [
+										":slug",
+										":nomor"
+									],
+									"variable": [
+										{
+											"key": "slug",
+											"value": "bukhari",
+											"description": "slug perawi"
+										},
+										{
+											"key": "nomor",
+											"value": "1",
+											"description": "nomor hadits, bertipe integer"
+										}
+									]
+								},
+								"description": "Menampilkan hadits berdasarkan perawinya.\n\n#### **Format**\n\n- `/hadis/:slug/:nomor`\n- `/hadits/:slug/:nomor`\n    \n\n##### **Contoh**\n\n- `/hadits/bukhari/1`\n- `/hadits/ahmad/3`\n- dan lainnya..."
+							},
+							"response": []
+						},
+						{
+							"name": "acak",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{hadits}}perawi/acak",
+									"host": [
+										"{{base_url}}{{version}}{{hadits}}perawi"
+									],
+									"path": [
+										"acak"
+									]
+								},
+								"description": "Mendapatkan hadits secara acak\n\n#### **Format**\n\n- `/hadits/perawi/acak`\n- `/hadits/perawi/random`\n    \n\n<img src=\"https://content.pstmn.io/517921c7-228e-4928-8263-9a002fe1b13c/c2h1ZmZsZS5wbmc=\">"
+							},
+							"response": []
+						}
+					],
+					"description": "<img src=\"https://content.pstmn.io/18831e0f-6be1-4f84-b109-7fc5b56a5a0e/aGFkaXRzLmpwZw==\" alt=\"\">\n\nTerdapat 9 Perawi:\n\n- Imam Abu Dawud (`4.419`)  \n    slug: `abu-dawud`\n- Imam Ahmad bin Hanbal (`4.305`)  \n    slug: `ahmad`\n- Imam Bukhari (`6.638`)  \n    slug: `bukhari`\n- Imam Darimi (`2.949`)  \n    slug: `darimi`\n- Imam Ibnu Majah (`4.285`)  \n    slug: `ibnu-majah`\n- Imam Malik (`1.587`)  \n    slug: `malik`\n- Imam Muslim (`4.930`)  \n    slug: `muslim`\n- Imam Nasai (`5.364`)  \n    slug: `nasai`\n- Imam Tirmidzi (`3.625`)  \n    slug: `tirmidzi`\n    \n\n### Format\n\n- `/hadits/:slug/:nomor`\n    \n\n###### **Keterangan**\n\n- `slug` : slug perawi\n- `nomor` : nomor hadits bertipe number (`int`)"
+				}
+			],
+			"description": "<img src=\"https://content.pstmn.io/16f2446c-335f-406c-930d-3a011a518835/aGQuanBn\" alt=\"\">\n\nMemuat hadits Nabi saw, dalam beberapa katagori:\n\n- Hadits Arbain\n- Hadits Berdasarkan Perawinya\n    \n\n## Penulisan\n\nMenggunakan ejaan `hadits` atau `hadis`"
+		},
+		{
+			"name": "Doa",
+			"item": [
+				{
+					"name": "Harian",
+					"item": [
+						{
+							"name": "acak",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{doa}}acak",
+									"host": [
+										"{{base_url}}{{version}}{{doa}}acak"
+									]
+								},
+								"description": "Mendapatkan doa harian secara acak.\n\n#### **Format**\n\n- `/doa/acak`\n- `/doa/random`\n    \n\n##### Sample Hasil:\n\n``` json\n{\n  \"status\": true,\n  \"request\": {\n    \"path\": \"/doa/acak\",\n    \"id\": 48\n  },\n  \"data\": {\n    \"arab\": \"اللَّهُمَّ إِنِّى أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِث\",\n    \"indo\": \"Ya Allah, sesungguhnya aku berlindung kepada-Mu dari setan-setan lelaki dan setan-setan perempuan.\",\n    \"judul\": \"Doa Masuk WC\",\n    \"source\": \"harian\"\n  }\n}\n\n ```\n\n<img src=\"https://content.pstmn.io/517921c7-228e-4928-8263-9a002fe1b13c/c2h1ZmZsZS5wbmc=\">"
+							},
+							"response": []
+						},
+						{
+							"name": "id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{doa}}/:id",
+									"host": [
+										"{{base_url}}{{version}}{{doa}}"
+									],
+									"path": [
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "nomor id bertipe integer\ndengan range 1-108"
+										}
+									]
+								},
+								"description": "Mendapatkan doa berdasarkan nomor urutan.\n\n#### **Format**:\n\n- `/doa/:id`\n    \n\n##### **Keterangan**\n\n- `nomor` adalah berupa angka atau bilangan (`int`), dengan minimal `1` dan maksimal `108`\n    \n\n##### **Contoh**\n\n- `/doa/1`\n- `/doa/81`"
+							},
+							"response": []
+						},
+						{
+							"name": "list sumber",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{doa}}sumber",
+									"host": [
+										"{{base_url}}{{version}}{{doa}}sumber"
+									]
+								},
+								"description": "Untuk mendapatkan list atau daftar sumber-sumber doa.\n\n**Format**\n\n- `/doa/sumber`\n    \n\n**Contoh Hasil**\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/doa/sumber\"\n    },\n    \"data\": [\n        \"quran\",\n        \"hadits\",\n        \"pilihan\",\n        \"harian\",\n        \"ibadah\",\n        \"haji\",\n        \"lainnya\"\n    ]\n}\n\n ```"
+							},
+							"response": []
+						},
+						{
+							"name": "katagori sumber",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}{{version}}{{doa}}sumber/:keyword",
+									"host": [
+										"{{base_url}}{{version}}{{doa}}sumber"
+									],
+									"path": [
+										":keyword"
+									],
+									"variable": [
+										{
+											"key": "keyword",
+											"value": "quran",
+											"description": "keyword sumber adalah kata kunci sumber yang di dapatkan dari request sebelumnya."
+										}
+									]
+								},
+								"description": "Menampilkan doa-doa berdasarkan katagori sumber yang ditentukan.\n\n#### **Format**\n\n- `/doa/sumber/:keyword`.\n    \n\n##### **Contoh**\n\n- `doa/sumber/quran`\n- `doa/sumber/harian`\n- ... dsb"
+							},
+							"response": []
+						}
+					],
+					"description": "Koleksi doa harian dari berbagai sumber"
+				}
+			],
+			"description": "Kumpulan doa-doa\n\n<img src=\"https://content.pstmn.io/78903294-67aa-4370-9a1e-7cdf8650b130/cHJheS5wbmc=\" alt=\"\">"
+		},
+		{
+			"name": "Asmaul Husna",
+			"item": [
+				{
+					"name": "acak",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{version}}{{husna}}acak",
+							"host": [
+								"{{base_url}}{{version}}{{husna}}acak"
+							]
+						},
+						"description": "Mendapatkan data asmaul husna secara acak.\n\n**Format**\n\n- `/husna/acak`\n- `/husna/random`\n    \n\nContoh Hasil\n\n``` json\n{\n  \"status\": true,\n  \"request\": {\n    \"path\": \"/husna/acak\",\n    \"id\": 37\n  },\n  \"data\": {\n    \"arab\": \"الْكَبِيْرُ\",\n    \"id\": 37,\n    \"indo\": \"Yang Maha Besar\",\n    \"latin\": \"Al-Kabîru\"\n  }\n}\n\n ```\n\n<img src=\"https://content.pstmn.io/517921c7-228e-4928-8263-9a002fe1b13c/c2h1ZmZsZS5wbmc=\" alt=\"\">"
+					},
+					"response": []
+				},
+				{
+					"name": "id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{version}}{{husna}}/:nomor",
+							"host": [
+								"{{base_url}}{{version}}{{husna}}"
+							],
+							"path": [
+								":nomor"
+							],
+							"variable": [
+								{
+									"key": "nomor",
+									"value": "1",
+									"description": "nomor index asmaul husna bertipe integer\nrange 1-99"
+								}
+							]
+						},
+						"description": "Mendapatkan data asmaul husna berdasarkan nomor urutan.\n\n#### **Format**:\n\n- `/husna/:nomor`\n    \n\n##### **Keterangan**\n\n- `nomor` adalah berupa angka atau bilangan (`int`), dengan minimal `1` dan maksimal `99`\n    \n\n##### **Contoh Request**\n\n- `/husna/1`\n- `/husna/81`\n    \n\n##### Contoh Hasil\n\n``` json\n{\n    \"status\": true,\n    \"request\": {\n        \"path\": \"/husna/1\",\n        \"id\": \"1\"\n    },\n    \"info\": {\n        \"min\": 1,\n        \"max\": 99\n    },\n    \"data\": {\n        \"arab\": \"الرَّحْمـٰنُ\",\n        \"id\": 1,\n        \"indo\": \"Yang Maha Pengasih\",\n        \"latin\": \"Ar-Rahmânu\"\n    }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "semua",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{version}}{{husna}}semua",
+							"host": [
+								"{{base_url}}{{version}}{{husna}}semua"
+							]
+						},
+						"description": "Mendapatkan list asmaul husna secara lengkap\n\n#### **Format**:\n\n- `/husna/semua`\n- `/husna/all`"
+					},
+					"response": []
+				}
+			],
+			"description": "<img src=\"https://content.pstmn.io/b5dcb148-2ffa-4633-ad51-200faf8d2c5e/bGFudGVybi5wbmc=\" alt=\"\">\n\nAllah SWT berfirman\n\n**اَللّٰهُ لَاۤ اِلٰهَ اِلَّا هُوَ ‌ؕ لَـهُ الۡاَسۡمَآءُ الۡحُسۡنٰى**\n\n_“Allahu Laa Ilaaha Illaa huwa Lahul Asmaaul Husna”_\n\n“Tidak ada Tuhan Melainkan Allah. Dialah Allah yang memiliki Asmaul Husna atau nama-nama yang terbaik.” (QS. Thaha ayat 8)."
+		},
+		{
+			"name": "Tools",
+			"item": [
+				{
+					"name": "Get IP",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{version}}{{tools}}ip",
+							"host": [
+								"{{base_url}}{{version}}{{tools}}ip"
+							]
+						},
+						"description": "Mendapatkan IP mu!\n\n<img src=\"https://content.pstmn.io/47d114ab-3afc-4e26-99ae-c75f8162503f/aXAtYWRkcmVzcy5wbmc=\" alt=\"\">"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Time",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{version}}{{tools}}time",
+							"host": [
+								"{{base_url}}{{version}}{{tools}}time"
+							]
+						},
+						"description": "Mendapatkan informasi waktu pada server.\n\nUntuk developer bisa dimanfaatkan waktu `timestamp` nya\n\n<img src=\"https://content.pstmn.io/2718beca-a293-434e-81b8-333df4b2ac0b/Y2lyY3VsYXItYWxhcm0tY2xvY2stdG9vbC5wbmc=\" alt=\"\">"
+					},
+					"response": []
+				}
+			],
+			"description": "Berbagai tools dan utility untuk kelengkapan API, mungkin akan bermanfaat bagi developer tertentu.\n\nSaran dan komentar dipersilakan yak! :-)\n\n<img src=\"https://content.pstmn.io/16598364-d763-47e6-8bd2-b8c82d294a4d/Z3JhcGhpYy10YWJsZXQucG5n\" alt=\"\">"
+		},
+		{
+			"name": "Referensial",
+			"item": [
+				{
+					"name": "iMasjid",
+					"item": [],
+					"description": "[iMasjid](https://masjid.myquran.com/) informasi dan jadwal sholat masjid.  \nweb base, dan [open source](https://github.com/myquran-com/iMasjid/)\n\nBisa di custom text, nama dan pesan bergulir\n\n- source: [open source](https://github.com/myquran-com/iMasjid/)\n    \n- sample: [Klik Di Sini](https://masjid.myquran.com/?action=preview&id=1301&ht=2&ha=false&hj=false&hs=false&hm=false&hh=false&bg=https://masjid.myquran.com/img/masjid.jpg&ct=1&jt=2&im=0&sb=0&dz=0&as=0&mg=0&is=0&nama=Masjid%20DjaKartA&alamat=Jl%20Dimanapun%20Tunaikanlah%205%20waktu&info1=Informasi%20infaq%20bulan%20November%202021,%20sebesar%20Rp%201.855.000,-%20Semoga%20kita%20senantiasa%20dilancarkan%20dalam%20segala%20urusan%20sehari-hari.%20aamiin&info2=Tetap%20jaga%20kebersihan,%20kesehatan,%20dan%20terapkan%20pola%20hidup%20sehat.%20semoga%20kita%20senantiasa%20dalam%20lindungan%20Nya.%20aamiin)"
+				},
+				{
+					"name": "Lintar Adzan Indonesia",
+					"item": [],
+					"description": "Aplikasi suara Adzan beserta jadwal sholat seluruh Kota/Kab di wilayah Indonesia.  \nJadwal sholat bisa ditampilkan jadwal sholat harian dan jadwal sholat bulanan.  \nDisamping itu, ada aplikasi Arah Kiblat dan Kompas dari Qibla Finder Google, dan Google Map/Lokasi.\n\n<img src=\"https://content.pstmn.io/4e03da45-8d7d-41d8-b6af-0bed5403d535/aW1hZ2UucG5n\" alt=\"\" height=\"1365\" width=\"720\">\n\n- Aplikasi tidak berbayar alias gratis dan tidak beriklan.\n    \n- [Link Applikasi](https://play.google.com/store/apps/details?id=org.lintarvic.adzan&pcampaignid=web_share)"
+				},
+				{
+					"name": "Sholat Kota Semarang",
+					"item": [],
+					"description": "<img src=\"https://content.pstmn.io/701960ba-ee4a-4987-96c8-5f831b7eb737/c2VtYXJhbmcuanBn\">\n\nKarya seorang mahasiswa **Universitas Dian Nuswantoro**, bernama **Naufal Haidar Rauf** dengan tampilan sederhana dan _to the point_.\n\n- web base\n    \n- [sumber doc](https://ieeexplore.ieee.org/document/10405316)\n    \n- [open source](https://github.com/naufalHaidar12342/jadwal-salat-kotasemarang)\n    \n\nLink: [https://salat-kotasemarang.vercel.app](https://salat-kotasemarang.vercel.app)"
+				}
+			],
+			"description": "Beberapa situs / aplikasi yang menggunakan API myQuran, mungkin ini akan bermanfaat bagi kita semua untuk dipakai dan atau bisa langsung dipergunakan, ataupun sebagai referensi.\n\nKontak kami untuk menambahkan atau menghapus dari daftar list tersebut.\n\n<img src=\"https://content.pstmn.io/97ce9213-1e40-4aa6-b14a-0e8cdf7cad9d/ZmlsZS5wbmc=\" alt=\"\">"
+		},
+		{
+			"name": "Support & Donasi",
+			"item": [],
+			"description": "<img src=\"https://content.pstmn.io/851a5018-bfaa-4ceb-8f44-33209cc8deee/ZG9uYXRlLnBuZw==\">\n\nJika dirasa bermanfaat dan ingin support agar tetap 'survive', dipersilakan berdonasi.\n\nKontak kami [banghasan@gmail.com](https://banghasan@gmail.com)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://api.myquran.com/"
+		},
+		{
+			"key": "version",
+			"value": "v2/"
+		},
+		{
+			"key": "quran",
+			"value": "quran/",
+			"type": "string"
+		},
+		{
+			"key": "surat",
+			"value": "surat/",
+			"type": "string"
+		},
+		{
+			"key": "hadits",
+			"value": "hadits/"
+		},
+		{
+			"key": "tools",
+			"value": "tools/"
+		},
+		{
+			"key": "doa",
+			"value": "doa/"
+		},
+		{
+			"key": "husna",
+			"value": "husna/"
+		},
+		{
+			"key": "cal",
+			"value": "cal/"
+		}
+	]
+}

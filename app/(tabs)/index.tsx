@@ -109,7 +109,7 @@ export default function LayarMenuUtama() {
           {/* Dizkr */}
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => handlePress('dzikr')}
+            onPress={() => handlePress('dzikir')}
           >
             <LinearGradient
               colors={['#9575CD', '#7E57C2']}
@@ -174,8 +174,8 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingTop: 45,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
     backgroundColor: 'rgba(126, 87, 194, 0.8)',
   },
   headerContent: {
