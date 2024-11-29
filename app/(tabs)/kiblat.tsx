@@ -20,6 +20,29 @@ export default function KiblatScreen() {
 
       let location = await Location.getCurrentPositionAsync({});
       setLocation(location);
+      
+      console.log('=== Current Position ===');
+      console.log(`Latitude: ${location.coords.latitude}°`);
+      console.log(`Longitude: ${location.coords.longitude}°`);
+      console.log(`Altitude: ${location.coords.altitude}m`);
+      console.log(`Accuracy: ${location.coords.accuracy}m`);
+      console.log('=====================');
+
+      // Check location accuracy and show appropriate alert
+      if (location.coords.accuracy !== null) {
+        if (location.coords.accuracy > 100) {
+          Alert.alert(
+            'Akurasi Rendah',
+            'Akurasi lokasi sangat rendah (>100m). Mohon pindah ke area terbuka atau tunggu GPS lebih akurat.'
+          );
+        } else if (location.coords.accuracy > 50) {
+          Alert.alert(
+            'Akurasi Sedang',
+            'Akurasi lokasi cukup (>50m). Untuk hasil lebih baik, mohon pindah ke area terbuka.'
+          );
+        }
+      }
+
       calculateQiblaDirection(location.coords.latitude, location.coords.longitude);
     })();
 
@@ -50,6 +73,31 @@ export default function KiblatScreen() {
     setQiblaDirection(qibla);
   };
 
+  const calculateQiblaDirection_test = (latitude: number, longitude: number) => {
+      // Kiblat Latitud jeung longitude
+      const KAABA_LAT = 21.422487; // 21° 25' 21" LU
+      const KAABA_LNG = 39.826206; // 39° 49' 34" BT
+      
+      
+      const φ1 = toRadians(latitude);
+      const φk = toRadians(KAABA_LAT);
+      const Δλ = toRadians(longitude - KAABA_LNG);
+      
+      const y = Math.sin(Δλ);
+      const x = Math.cos(φ1) * Math.tan(φk) - Math.sin(φ1) * Math.cos(Δλ);
+      
+      let qibla = toDegrees(Math.atan2(y, x));
+      
+      // Normalize to 0-360 degrees
+      qibla = (qibla + 360) % 360;
+      
+      // Calculate UTSB (Utara-Timur-Selatan-Barat) direction
+      const utsbDirection = 270 + (90 - qibla);
+      const normalizedUTSB = (utsbDirection + 360) % 360;
+      
+      setQiblaDirection(normalizedUTSB);
+  };
+
   const toRadians = (degrees: number) => degrees * (Math.PI / 180);
   const toDegrees = (radians: number) => radians * (180 / Math.PI);
 
@@ -76,50 +124,75 @@ export default function KiblatScreen() {
       };
     }
     return {
-      text: 'Sesuaikan arah ke Ka\'bah',
+      text: 'Putarkan arah ke Ka\'bah',
       color: '#E1BEE7'
     };
   };
+
+  const getQiblaAccuracy_test = () => {
+    const currentDirection = (degree + qiblaDirection) % 360;
+    const difference = Math.abs(currentDirection - 292.142); // Using the example's result of 292° 08' 32.74"
+    
+    if (difference <= 5) {
+        return {
+            text: 'Tepat mengarah ke Ka\'bah!',
+            color: '#00FF00'
+        };
+    }
+    if (difference <= 15) {
+        return {
+            text: 'Hampir tepat, sedikit sesuaikan',
+            color: '#FFD700'
+        };
+    }
+    return {
+        text: 'Sesuaikan arah ke Ka\'bah',
+        color: '#E1BEE7'
+    };
+};
+
 
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#7E57C2', '#4A148C']} style={styles.gradient}>
         <View style={styles.content}>
-          <View style={styles.compassContainer}>
-          <View style={styles.compassCircle}>
-            {/* Generate Kaaba markers every 45 degrees */}
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-            <FontAwesome5
-                key={angle}
-                name="kaaba"
-                size={20}
-                color="rgba(255, 215, 0, 0.3)"
-                style={[
-                styles.compassMarker,
-                {
-                    transform: [
-                    { rotate: `${angle}deg` },
-                    { translateY: -140 } // Half of compass size minus some padding
-                    ]
-                }
-                ]}
-            />
-            ))}
-        </View>
-            {/* Main Compass */}
-            <MaterialCommunityIcons
-              name="compass-outline"
-              size={250}
-              color="#FFF"
-              style={[styles.compass, { transform: [{ rotate: `${360 - degree}deg` }] }]}
-            />
+        <View style={styles.compassContainer}>
+  <View style={styles.compassCircle}>
+    {/* Inner decorative circle */}
+    <View style={styles.innerCircle} />
+    
+    {/* Compass ring with gradient */}
+    <LinearGradient
+      colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)']}
+      style={styles.compassRing}
+    />
+    
+    {/* Direction arrow and Kaaba marker */}
+    <View style={[styles.arrowContainer, { transform: [{ rotate: `${360 - degree}deg` }] }]}>
+      <FontAwesome5 name="long-arrow-alt-up" size={32} color="#FFD700" />
+      <FontAwesome5
+        name="kaaba"
+        size={20}
+        color="#FFD700"
+        style={[styles.qiblaMarker, { transform: [{ translateY: -90 }] }]}
+      />
+    </View>
 
-            {/* Cardinal Points */}
-            <Text style={[styles.cardinalPoint, styles.north]}>U</Text>
-            <Text style={[styles.cardinalPoint, styles.east]}>T</Text>
-            <Text style={[styles.cardinalPoint, styles.south]}>S</Text>
-            <Text style={[styles.cardinalPoint, styles.west]}>B</Text>
-          </View>
+    {/* Cardinal Points with decorative boxes */}
+    {['U', 'T', 'S', 'B'].map((direction, index) => (
+      <View
+        key={direction}
+        style={[
+          styles.cardinalBox,
+          { transform: [{ rotate: `${index * 90}deg` }, { translateY: -110 }] }
+        ]}
+      >
+        <Text style={styles.cardinalText}>{direction}</Text>
+      </View>
+    ))}
+  </View>
+</View>
+
 
           <View style={styles.infoContainer}>
             <Text style={styles.degreeText}>
@@ -135,15 +208,25 @@ export default function KiblatScreen() {
                 {getQiblaAccuracy().text}
             </Text>
             {location && (
-              <>
-                <Text style={styles.locationText}>
-                  Lokasi: {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
-                </Text>
-                <Text style={styles.qiblaText}>
-                  Arah Kiblat: {Math.round(qiblaDirection)}°
-                </Text>
-              </>
-            )}
+                <>
+                  <Text style={styles.locationText}>
+                    Lokasi: {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
+                  </Text>
+                  <Text style={styles.qiblaText}>
+                    Arah Kiblat: {Math.round(qiblaDirection)}°
+                  </Text>
+                  {location.coords.accuracy !== null && (
+                    <Text style={[styles.locationText, 
+                      {color: location.coords.accuracy > 100 ? '#FF6B6B' : 
+                            location.coords.accuracy > 50 ? '#FFD93D' : '#4BB543'}]}>
+                      Akurasi GPS: {Math.round(location.coords.accuracy)}m 
+                      {location.coords.accuracy > 100 ? ' (Rendah)' : 
+                      location.coords.accuracy > 50 ? ' (Sedang)' : ' (Baik)'}
+                    </Text>
+                  )}
+                </>
+              )}
+
           </View>
 
             <View style={styles.instructionContainer}>
@@ -166,7 +249,6 @@ export default function KiblatScreen() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -179,25 +261,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  compassContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 300,
-    height: 300,
-    position: 'relative',
-  },
   compass: {
     position: 'absolute',
-  },
-  compassCircle: {
-    position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   compassMarker: {
     position: 'absolute',
@@ -213,7 +278,7 @@ const styles = StyleSheet.create({
   },
   degreeText: {
     color: '#FFF',
-    fontSize: 48,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   accuracyText: {
@@ -277,5 +342,66 @@ const styles = StyleSheet.create({
   instructionText: {
     color: '#E1BEE7',
     fontSize: 14,
-  }
+  },
+  compassContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 240,
+    height: 240,
+    position: 'relative',
+  },
+  compassCircle: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.2)',
+  },
+  innerCircle: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    position: 'absolute',
+  },
+  compassRing: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    opacity: 0.5,
+  },
+  arrowContainer: {
+    alignItems: 'center',
+    position: 'absolute',
+  },
+  cardinalBox: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 4,
+    borderRadius: 4,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  cardinalText: {
+    color: '#FFD700',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  qiblaMarker: {
+    position: 'absolute',
+    opacity: 0.9,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  
+  
 });
