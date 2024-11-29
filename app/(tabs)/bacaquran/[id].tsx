@@ -59,7 +59,7 @@ export default function QuranDetailScreen() {
     { id: '05', name: 'Misyari Rasyid Al-Afasi' }
   ];
   
-  const [selectedQari, setSelectedQari] = useState('02');
+  const [selectedQari, setSelectedQari] = useState('01');
 
   const [isPlayingFull, setIsPlayingFull] = useState(false);
 
