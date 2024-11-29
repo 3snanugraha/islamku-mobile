@@ -84,7 +84,7 @@ export default function LayarMenuUtama() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => handlePress('donasi')}
+            onPress={() => handlePress('bacaquran')}
           >
             <LinearGradient
               colors={['#9575CD', '#7E57C2']}
@@ -102,7 +102,7 @@ export default function LayarMenuUtama() {
         <View style={styles.menuRow}>
           <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => handlePress('donasi')}
+              onPress={() => handlePress('asmaul')}
             >
               <LinearGradient
                 colors={['#9575CD', '#7E57C2']}
@@ -143,7 +143,7 @@ export default function LayarMenuUtama() {
           <MaterialCommunityIcons name="clock-outline" size={24} color="#FFF" />
           <Text style={styles.footerText}>Waktu Sholat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerContent} onPress={() => handlePress('settings')}>
+        <TouchableOpacity style={styles.footerContent} onPress={() => handlePress('pengaturan')}>
           <MaterialCommunityIcons name="cog" size={24} color="#FFF" />
           <Text style={styles.footerText}>Pengaturan</Text>
         </TouchableOpacity>

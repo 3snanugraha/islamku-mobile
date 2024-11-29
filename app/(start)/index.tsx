@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Font from 'expo-font'; // Import untuk memuat font
 import { useFonts } from 'expo-font';
 import { Amiri_400Regular } from '@expo-google-fonts/amiri'; // Import font Amiri
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,6 +43,21 @@ const slides = [
 export default function StartScreen() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    checkStartScreenSetting();
+  }, []);
+
+  const checkStartScreenSetting = async () => {
+    try {
+      const showStartScreen = await AsyncStorage.getItem('showStartScreen');
+      if (showStartScreen === 'false') {
+        router.replace('/(tabs)');
+      }
+    } catch (error) {
+      console.error('Error checking start screen setting:', error);
+    }
+  };
 
   // Muat font
   const [fontsLoaded] = useFonts({
