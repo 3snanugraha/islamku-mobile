@@ -281,13 +281,7 @@ export default function JadwalShalat() {
             <Text style={styles.subtitle}>{currentCity?.lokasi || 'Lokasi tidak ditemukan'}</Text>
           </View>
         </View>
-        <TouchableOpacity 
-            style={styles.downloadButton}
-            onPress={downloadMonthlySchedule}
-        >
-            <MaterialCommunityIcons name="download" size={24} color="#FFF" />
-            <Text style={styles.downloadText}>Download Jadwal Bulanan</Text>
-        </TouchableOpacity>
+
         {schedule && (
           <Text style={styles.date}>{schedule.tanggal}</Text>
         )}
@@ -306,6 +300,13 @@ export default function JadwalShalat() {
             <PrayerTimeCard title="Isya" time={schedule.isya} icon="weather-night" />
           </View>
         )}
+                <TouchableOpacity 
+                    style={styles.downloadButton}
+                    onPress={downloadMonthlySchedule}
+                >
+                    <MaterialCommunityIcons name="download" size={24} color="#FFF" />
+                    <Text style={styles.downloadText}>Download Jadwal Bulanan (PDF)</Text>
+                </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -394,7 +395,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     padding: 10,
     borderRadius: 8,
-    marginTop: 10,
+    marginBottom: 50,
   },
   downloadText: {
     color: '#FFF',
