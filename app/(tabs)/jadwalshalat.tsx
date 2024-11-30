@@ -49,7 +49,7 @@ export default function JadwalShalat() {
         longitude
       });
   
-      console.log('Location data:', geocode);
+      // console.log('Location data:', geocode);
   
       if (geocode[0]) {
         // Try to get location name from different fields

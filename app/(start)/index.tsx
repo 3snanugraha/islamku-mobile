@@ -52,7 +52,7 @@ export default function StartScreen() {
     try {
       const showStartScreen = await AsyncStorage.getItem('showStartScreen');
       if (showStartScreen === 'false') {
-        router.replace('/(tabs)');
+        router.push('/(tabs)');
       }
     } catch (error) {
       console.error('Error checking start screen setting:', error);

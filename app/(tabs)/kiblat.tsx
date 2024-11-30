@@ -21,12 +21,12 @@ export default function KiblatScreen() {
       let location = await Location.getCurrentPositionAsync({});
       setLocation(location);
       
-      console.log('=== Current Position ===');
-      console.log(`Latitude: ${location.coords.latitude}°`);
-      console.log(`Longitude: ${location.coords.longitude}°`);
-      console.log(`Altitude: ${location.coords.altitude}m`);
-      console.log(`Accuracy: ${location.coords.accuracy}m`);
-      console.log('=====================');
+      // console.log('=== Current Position ===');
+      // console.log(`Latitude: ${location.coords.latitude}°`);
+      // console.log(`Longitude: ${location.coords.longitude}°`);
+      // console.log(`Altitude: ${location.coords.altitude}m`);
+      // console.log(`Accuracy: ${location.coords.accuracy}m`);
+      // console.log('=====================');
 
       // Check location accuracy and show appropriate alert
       if (location.coords.accuracy !== null) {

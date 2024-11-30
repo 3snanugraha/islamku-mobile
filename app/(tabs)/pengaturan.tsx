@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import Constants from 'expo-constants';
 
 export default function PengaturanScreen() {
   const [showStartScreen, setShowStartScreen] = useState(true);
@@ -81,6 +82,13 @@ export default function PengaturanScreen() {
           thumbColor={locationPermission ? '#7E57C2' : '#f4f3f4'}
         />
       </View>
+
+      <View style={styles.versionContainer}>
+        <MaterialCommunityIcons name="information" size={24} color="#E1BEE7" />
+        <Text style={styles.versionText}>
+          Versi {Constants.expoConfig?.version || '1.0.0'}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -135,5 +143,17 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     marginLeft: 15,
+  },
+  versionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    opacity: 0.8,
+  },
+  versionText: {
+    color: '#E1BEE7',
+    fontSize: 14,
+    marginLeft: 8,
   }
 });

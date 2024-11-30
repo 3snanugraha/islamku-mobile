@@ -37,6 +37,7 @@ export default function SurahDetailScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { width } = useWindowDimensions();
   const [selectedAudio, setSelectedAudio] = useState<string>('01');
+  const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
   const [audioOptions] = useState<AudioOption[]>([
     { id: '01', name: 'Abdullah Al-Juhany', url: '' },
     { id: '02', name: 'Abdul Muhsin Al-Qasim', url: '' },
@@ -70,27 +71,32 @@ export default function SurahDetailScreen() {
       try {
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: surahDetail.audioFull[selectedAudio] },
-          { shouldPlay: false }
+          { shouldPlay: true }
         );
         setSound(newSound);
+        setIsPlaying(true);
+        
         newSound.setOnPlaybackStatusUpdate((status) => {
           if (status.isLoaded) {
             setIsPlaying(status.isPlaying);
             if (status.didJustFinish) {
               setIsPlaying(false);
+              setIsLoading(false);
             }
           }
         });
       } catch (error) {
         console.error('Error loading sound:', error);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
   }
 
   async function handlePlayPause() {
-    if (!sound) {
+    if (!sound && !isLoadingAudio) {
+      setIsLoadingAudio(true);
       await loadSound();
+      setIsLoadingAudio(false);
     }
     
     if (sound) {
@@ -104,8 +110,14 @@ export default function SurahDetailScreen() {
 
   async function handleStop() {
     if (sound) {
-      await sound.stopAsync();
-      await sound.setPositionAsync(0);
+      try {
+        await sound.stopAsync();
+        await sound.setPositionAsync(0);
+        setIsPlaying(false);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error stopping audio:', error);
+      }
     }
   }
 
@@ -155,12 +167,15 @@ export default function SurahDetailScreen() {
             <Text style={styles.audioSelectorTitle}>Pilih Qari:</Text>
             <Picker
               selectedValue={selectedAudio}
-              onValueChange={(itemValue) => {
-                setSelectedAudio(itemValue);
+              onValueChange={async (itemValue) => {
+                // Stop and cleanup current audio
                 if (sound) {
-                  sound.unloadAsync();
+                  await sound.stopAsync();
+                  await sound.unloadAsync();
                   setSound(undefined);
                 }
+                setIsPlaying(false);
+                setSelectedAudio(itemValue);
               }}
               style={styles.picker}
               dropdownIconColor="#4A148C"
@@ -177,11 +192,11 @@ export default function SurahDetailScreen() {
           </View>
 
           <View style={styles.audioControlContainer}>
-            <TouchableOpacity 
-              style={styles.playButton} 
-              onPress={handlePlayPause}
-              disabled={isLoading}
-            >
+          <TouchableOpacity 
+            style={styles.playButton} 
+            onPress={handlePlayPause}
+            disabled={isLoadingAudio}
+          >
               <Ionicons 
                 name={isPlaying ? "pause-circle" : "play-circle"} 
                 size={30} 
@@ -195,7 +210,7 @@ export default function SurahDetailScreen() {
             <TouchableOpacity 
               style={styles.stopButton} 
               onPress={handleStop}
-              disabled={!sound || isLoading}
+              disabled={!isPlaying}
             >
               <Ionicons name="stop-circle" size={30} color="#FFFFFF" />
               <Text style={styles.playButtonText}>Stop</Text>

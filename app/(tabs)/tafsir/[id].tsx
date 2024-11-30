@@ -53,6 +53,7 @@ export default function TafsirDetailScreen() {
   const [sound, setSound] = useState<Audio.Sound>();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
   const [selectedAudio, setSelectedAudio] = useState<string>('01');
   const [audioOptions] = useState<AudioOption[]>([
     { id: '01', name: 'Abdullah Al-Juhany', url: '' },
@@ -67,6 +68,8 @@ export default function TafsirDetailScreen() {
     return () => {
       if (sound) {
         sound.unloadAsync();
+        setSound(undefined);
+        setIsPlaying(false);
       }
     };
   }, [id]);
@@ -87,27 +90,32 @@ export default function TafsirDetailScreen() {
       try {
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: tafsirDetail.audioFull[selectedAudio] },
-          { shouldPlay: false }
+          { shouldPlay: true }  // Auto-play when loaded
         );
         setSound(newSound);
+        setIsPlaying(true);
+        
         newSound.setOnPlaybackStatusUpdate((status) => {
           if (status.isLoaded) {
             setIsPlaying(status.isPlaying);
             if (status.didJustFinish) {
               setIsPlaying(false);
+              setIsLoading(false);
             }
           }
         });
       } catch (error) {
         console.error('Error loading sound:', error);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
   }
 
   async function handlePlayPause() {
-    if (!sound) {
+    if (!sound && !isLoadingAudio) {
+      setIsLoadingAudio(true);
       await loadSound();
+      setIsLoadingAudio(false);
     }
     
     if (sound) {
@@ -121,10 +129,17 @@ export default function TafsirDetailScreen() {
 
   async function handleStop() {
     if (sound) {
-      await sound.stopAsync();
-      await sound.setPositionAsync(0);
+      try {
+        await sound.stopAsync();
+        await sound.setPositionAsync(0);
+        setIsPlaying(false);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error stopping audio:', error);
+      }
     }
   }
+
   const baseStyle = {
     fontSize: 16,
     color: '#4A148C',
@@ -170,17 +185,20 @@ export default function TafsirDetailScreen() {
           <View style={styles.audioSelectorContainer}>
             <Text style={styles.audioSelectorTitle}>Pilih Qari:</Text>
             <Picker
-              selectedValue={selectedAudio}
-              onValueChange={(itemValue) => {
-                setSelectedAudio(itemValue);
-                if (sound) {
-                  sound.unloadAsync();
-                  setSound(undefined);
-                }
-              }}
-              style={styles.picker}
-              dropdownIconColor="#4A148C"
-            >
+                selectedValue={selectedAudio}
+                onValueChange={async (itemValue) => {
+                  if (sound) {
+                    await sound.stopAsync();
+                    await sound.unloadAsync();
+                    setSound(undefined);
+                  }
+                  setIsPlaying(false);
+                  setIsLoading(false);
+                  setSelectedAudio(itemValue);
+                }}
+                style={styles.picker}
+                dropdownIconColor="#4A148C"
+              >
               {audioOptions.map((option) => (
                 <Picker.Item 
                   key={option.id} 
@@ -211,7 +229,7 @@ export default function TafsirDetailScreen() {
             <TouchableOpacity 
               style={styles.stopButton} 
               onPress={handleStop}
-              disabled={!sound || isLoading}
+              disabled={!isPlaying} // Only disabled when not playing
             >
               <Ionicons name="stop-circle" size={30} color="#FFFFFF" />
               <Text style={styles.playButtonText}>Stop</Text>
