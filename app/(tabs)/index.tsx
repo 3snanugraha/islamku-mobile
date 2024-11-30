@@ -146,7 +146,7 @@ export default function LayarMenuUtama() {
           <MaterialCommunityIcons name="compass" size={24} color="#FFF" />
           <Text style={styles.footerText}>Arah Kiblat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerContent} onPress={() => handlePress('sholat')}>
+        <TouchableOpacity style={styles.footerContent} onPress={() => handlePress('jadwalshalat')}>
           <MaterialCommunityIcons name="clock-outline" size={24} color="#FFF" />
           <Text style={styles.footerText}>Waktu Sholat</Text>
         </TouchableOpacity>
