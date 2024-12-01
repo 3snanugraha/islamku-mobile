@@ -295,7 +295,11 @@ export default function JadwalShalat() {
   };
 
   const PrayerTimeCard = ({ title, time, icon }: { title: string; time: string; icon: keyof typeof MaterialCommunityIcons.glyphMap }) => (
-    <TouchableOpacity style={styles.prayerCard}>
+    <TouchableOpacity 
+      style={styles.prayerCard}
+      accessible={true}
+      accessibilityLabel={`${title} prayer time at ${time}. Toggle notification switch to receive reminders 10 minutes before`}
+    >
       <LinearGradient
         colors={['#9575CD', '#7E57C2']}
         start={{ x: 0, y: 0 }}
@@ -311,8 +315,11 @@ export default function JadwalShalat() {
             onValueChange={(enabled) => handleNotificationToggle(title, enabled)}
             trackColor={{ false: '#767577', true: '#4A148C' }}
             thumbColor={notificationStates[title] ? '#7E57C2' : '#f4f3f4'}
+            accessibilityLabel={`Toggle ${title} prayer notification`}
+            accessibilityHint={`Activates reminder 10 minutes before ${title} prayer time`}
           />
         </View>
+        <Text style={styles.reminderText}>Pengingat 10 menit sebelumnya</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -349,12 +356,14 @@ export default function JadwalShalat() {
       </View>
 
       <View>
-      <TouchableOpacity 
+      {/* Test Purpose */}
+      {/* <TouchableOpacity 
         style={styles.testButton}
         onPress={testNotification}
       >
         <Text style={styles.buttonText}>Test Notification (5s)</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      
       </View>
 
       <ScrollView style={styles.content}>
@@ -497,5 +506,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFF',
     fontSize: 14
+  },
+  reminderText: {
+    color: '#E1BEE7',
+    fontSize: 10,
+    fontStyle: 'italic',
+    marginTop: 4,
+    textAlign: 'center',
   }
 });
