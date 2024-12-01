@@ -21,7 +21,11 @@
         "foregroundImage": "./assets/images/islamku_logos.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.islamku.app"
+      "package": "com.islamku.app",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -36,12 +40,13 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to find Qibla direction."
         }
       ]
-    ],    "experiments": {
+    ],
+    "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "687d3e39-a1d9-4dfc-a95b-ea59cdf0b1a5"
+        "projectId": "4f686e83-ab07-45bc-a041-88f49ca43f78"
       }
     }
   }
