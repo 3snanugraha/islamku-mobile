@@ -20,7 +20,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/islamku_logos.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "enableProguard": true,
+        "enableShrinkResources": true,
+        "enableR8": true
       },
       "package": "com.islamku.app",
       "permissions": [
