@@ -57,8 +57,8 @@ export const PrayerTimeHelpers = {
 
   formatCountdown: (countdown: CountdownResult): string => {
     if (countdown.hours > 0) {
-      return `${countdown.hours} jam ${countdown.minutes} menit`;
+      return `${countdown.hours} jam ${countdown.minutes} menit lagi`;
     }
-    return `${countdown.minutes} menit`;
+    return `${countdown.minutes} menit lagi`;
   }
 };

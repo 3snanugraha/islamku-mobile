@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -68,16 +68,14 @@ export default function LayarMenuUtama() {
     }
   };
 
-    
-
-    const requestLocation = async () => {
-      try {
-        await LocationService.initializeLocation();
-        checkLocationPermission();
-      } catch (error) {
-        console.error('Failed to get location permission');
-      }
-    };
+  const requestLocation = async () => {
+    try {
+      await LocationService.initializeLocation();
+      checkLocationPermission();
+    } catch (error) {
+      console.error('Failed to get location permission');
+    }
+  };
   
   const handlePress = (menu: string) => {
     router.push(`/(tabs)/${menu}` as any);
@@ -157,13 +155,17 @@ export default function LayarMenuUtama() {
             </ImageBackground>
 
             <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeTitle}>Selamat Datang</Text>
+              <Text style={styles.welcomeTitle}>السَّلامُ عَلَيْكُمْ</Text>
               <Text style={styles.welcomeSubtitle}>Silahkan pilih menu di bawah ini</Text>
             </View>
 
       <View style={styles.menuContainer}>
-      {/* Menu untuk al-Qur'an */}
-      <View style={styles.menuRow}>
+      <ScrollView 
+        style={styles.menuContainer}
+        showsVerticalScrollIndicator={false} // Optional: menyembunyikan scrollbar
+      >
+        {/* Menu untuk al-Qur'an */}
+        <View style={styles.menuRow}>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => handlePress('bacaquran')}
@@ -196,7 +198,6 @@ export default function LayarMenuUtama() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
-
         {/* Doa dan Asma'ul Husna */}
         <View style={styles.menuRow}>
           
@@ -231,11 +232,8 @@ export default function LayarMenuUtama() {
                 <Text style={styles.menuDescription}>99 Nama Allah Yang Maha Indah</Text>
               </LinearGradient>
             </TouchableOpacity>
-
         </View>
-
-
-
+        {/* Dzikir dan Donasi */}
         <View style={styles.menuRow}>
           {/* Dizkr */}
           <TouchableOpacity
@@ -270,6 +268,7 @@ export default function LayarMenuUtama() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+        </ScrollView>
       </View>
 
       <View style={styles.footer}>
@@ -322,7 +321,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 3,
+    marginTop: 4,
   },
   welcomeSubtitle: {
     color: '#E1BEE7',
@@ -350,7 +349,7 @@ const styles = StyleSheet.create({
   menuContainer: {
     flex: 1,
     paddingHorizontal: 8, // Reduced padding
-    paddingVertical: 12,
+    paddingVertical: 4,
   },
   menuRow: {
     flexDirection: 'row',
