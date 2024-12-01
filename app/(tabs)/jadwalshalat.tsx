@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet, View, Text, ScrollView, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Location from 'expo-location';
-import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
 import { LocationService } from '@/services/LocationService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Switch } from 'react-native';
+import { PrayerTimeHelpers } from '@/helpers/PrayerTimeHelpers';
+import * as Notifications from 'expo-notifications';
 
 interface PrayerTime {
   tanggal: string;
@@ -20,6 +22,23 @@ interface PrayerTime {
   isya: string;
 }
 
+// Add this interface for the response type
+interface NotificationResponse {
+  actionIdentifier: string;
+  notification: Notifications.Notification;
+}
+
+interface NotificationPreference {
+  prayerName: string;
+  isEnabled: boolean;
+  soundType: 'regular' | 'fajr';
+  minutesBefore: number;
+}
+
+interface PrayerNotificationState {
+  [key: string]: boolean;
+}
+
 interface City {
   id: string;
   lokasi: string;
@@ -29,6 +48,26 @@ export default function JadwalShalat() {
   const [schedule, setSchedule] = useState<PrayerTime | null>(null);
   const [currentCity, setCurrentCity] = useState<City | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notificationStates, setNotificationStates] = useState<PrayerNotificationState>({});
+
+  // Add this new useEffect alongside existing useEffect
+  useEffect(() => {
+    async function setupNotifications() {
+      const permissionGranted = await PrayerTimeHelpers.setupNotifications();
+      if (permissionGranted) {
+        const savedPrefs = await AsyncStorage.getItem('notificationPreferences');
+        if (savedPrefs) {
+          const prefs = JSON.parse(savedPrefs);
+          const states: PrayerNotificationState = {};
+          prefs.forEach((pref: NotificationPreference) => {
+            states[pref.prayerName] = pref.isEnabled;
+          });
+          setNotificationStates(states);
+        }
+      }
+    }
+    setupNotifications();
+  }, []);
 
   useEffect(() => {
     async function setupLocation() {
@@ -46,42 +85,49 @@ export default function JadwalShalat() {
   
     setupLocation();
   }, []);
+
+  // Update the useEffect with proper typing
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response: NotificationResponse) => {
+      if (response.actionIdentifier === 'STOP_SOUND') {
+        Notifications.dismissAllNotificationsAsync();
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
   
 
-  const getCurrentLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Allow location access to get local prayer times');
-        return;
+  const handleNotificationToggle = async (prayerName: string, enabled: boolean) => {
+      const newStates = { ...notificationStates, [prayerName]: enabled };
+      setNotificationStates(newStates);
+
+      const preferences: NotificationPreference[] = Object.keys(newStates).map(name => ({
+        prayerName: name,
+        isEnabled: newStates[name],
+        soundType: name === 'Subuh' ? 'fajr' : 'regular' as const,
+        minutesBefore: 10
+      }));
+
+      await AsyncStorage.setItem('notificationPreferences', JSON.stringify(preferences));
+      if (schedule) {
+        await PrayerTimeHelpers.scheduleNotifications(schedule, preferences);
       }
-  
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-      
-      const geocode = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude
-      });
-  
-      // console.log('Location data:', geocode);
-  
-      if (geocode[0]) {
-        // Try to get location name from different fields
-        const locationName = 
-          geocode[0].subregion?.replace(/(Kabupaten|Kota) /, '') || 
-          geocode[0].city?.replace(/(Kabupaten|Kota) /, '') ||
-          geocode[0].district?.replace(/(Kabupaten|Kota) /, '');
-  
-        if (locationName) {
-          await findCity(locationName);
-        }
-      }
-    } catch (error) {
-      console.error('Error getting location:', error);
-      setLoading(false);
-    }
   };
+
+  const testNotification = async () => {
+    const testTime = new Date();
+    const adzan = require('@/assets/audio/adzan.mp3');
+    testTime.setSeconds(testTime.getSeconds() + 10); // Will trigger in 5 seconds
+    
+    await PrayerTimeHelpers.scheduleNotification({
+      title: "Test Adzan",
+      body: "Testing prayer notification sound",
+      time: testTime,
+      sound: adzan
+    });
+  };
+  
   
   const downloadMonthlySchedule = async () => {
     if (!currentCity) return;
@@ -234,22 +280,6 @@ export default function JadwalShalat() {
       Alert.alert('Error', 'Failed to generate PDF schedule');
     }
   };
-  
-
-  const findCity = async (cityName: string) => {
-    try {
-      const response = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${cityName}`);
-      const data = await response.json();
-      
-      if (data.status && data.data.length > 0) {
-        setCurrentCity(data.data[0]);
-        await fetchPrayerTimes(data.data[0].id);
-      }
-    } catch (error) {
-      console.error('Error finding city:', error);
-      setLoading(false);
-    }
-  };
 
   const fetchPrayerTimes = async (cityId: string) => {
     try {
@@ -265,12 +295,28 @@ export default function JadwalShalat() {
   };
 
   const PrayerTimeCard = ({ title, time, icon }: { title: string; time: string; icon: keyof typeof MaterialCommunityIcons.glyphMap }) => (
-    <View style={styles.prayerCard}>
-      <MaterialCommunityIcons name={icon} size={32} color="#FFF" />
-      <Text style={styles.prayerTitle}>{title}</Text>
-      <Text style={styles.prayerTime}>{time}</Text>
-    </View>
+    <TouchableOpacity style={styles.prayerCard}>
+      <LinearGradient
+        colors={['#9575CD', '#7E57C2']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.prayerGradient}
+      >
+        <MaterialCommunityIcons name={icon} size={32} color="#FFF" />
+        <Text style={styles.prayerTitle}>{title}</Text>
+        <Text style={styles.prayerTime}>{time}</Text>
+        <View style={styles.notificationToggle}>
+          <Switch
+            value={notificationStates[title] || false}
+            onValueChange={(enabled) => handleNotificationToggle(title, enabled)}
+            trackColor={{ false: '#767577', true: '#4A148C' }}
+            thumbColor={notificationStates[title] ? '#7E57C2' : '#f4f3f4'}
+          />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
   );
+  
   if (loading) {
     return (
       <View style={[styles.container, styles.centerContent]}>
@@ -300,6 +346,15 @@ export default function JadwalShalat() {
         {schedule && (
           <Text style={styles.date}>{schedule.tanggal}</Text>
         )}
+      </View>
+
+      <View>
+      <TouchableOpacity 
+        style={styles.testButton}
+        onPress={testNotification}
+      >
+        <Text style={styles.buttonText}>Test Notification (5s)</Text>
+      </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
@@ -379,22 +434,36 @@ const styles = StyleSheet.create({
   },
   prayerCard: {
     width: '48%',
-    backgroundColor: 'rgba(126, 87, 194, 0.3)',
-    borderRadius: 15,
+    borderRadius: 12,
+    marginBottom: 15,
+    overflow: 'hidden',
+    elevation: 3,
+    height: 120,
+  },
+  notificationToggle: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  prayerGradient: {
     padding: 15,
     alignItems: 'center',
-    marginBottom: 15,
+    height: '100%',
+    justifyContent: 'center',
+    position: 'relative',
   },
   prayerTitle: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
-    marginTop: 10,
+    marginTop: 8,
+    textAlign: 'center',
   },
   prayerTime: {
     color: '#E1BEE7',
-    fontSize: 16,
-    marginTop: 5,
+    fontSize: 11,
+    marginTop: 4,
+    textAlign: 'center',
   },
   centerContent: {
     justifyContent: 'center',
@@ -416,5 +485,17 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginLeft: 8,
     fontSize: 14,
+  },
+  // Test Purposes
+  testButton: {
+    backgroundColor: '#7E57C2',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10,
+    alignItems: 'center'
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 14
   }
 });

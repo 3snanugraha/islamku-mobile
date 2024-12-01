@@ -14,7 +14,8 @@
       "backgroundColor": "#4A148C"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.islamku.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -38,6 +39,18 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location to find Qibla direction."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/islamku_logos.png",
+          "color": "#7E57C2",
+          "defaultChannel": "prayer-times",
+          "sounds": [
+            "./assets/audio/adzan.mp3",
+            "./assets/audio/adzan_shubuh.mp3"
+          ]
         }
       ]
     ],
