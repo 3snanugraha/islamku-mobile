@@ -5,6 +5,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { LocationService } from '@/services/LocationService';
+import { Alert } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -18,14 +20,20 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function initializeApp() {
+      try {
+        if (loaded) {
+          await LocationService.initializeLocation();
+          await SplashScreen.hideAsync();
+        }
+      } catch (error) {
+        Alert.alert('Location Error', 'Please enable location services to use all features');
+        await SplashScreen.hideAsync();
+      }
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+    initializeApp();
+  }, [loaded]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

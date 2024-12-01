@@ -1,101 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Platform, Alert } from 'react-native';
+import { StyleSheet, View, Text, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
-import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
+import { LocationService } from '@/services/LocationService';
+
+interface LocationData {
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+}
 
 export default function KiblatScreen() {
   const [degree, setDegree] = useState(0);
   const [qiblaDirection, setQiblaDirection] = useState(0);
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required for Qibla direction');
-        return;
+    loadLocation();
+    setupCompass();
+    
+    return () => {
+      Magnetometer.removeAllListeners();
+    };
+  }, []);
+
+  const loadLocation = async () => {
+    try {
+      const savedLocation = await LocationService.getStoredLocation();
+      if (savedLocation) {
+        setLocationData({
+          latitude: savedLocation.latitude,
+          longitude: savedLocation.longitude,
+          accuracy: savedLocation.accuracy
+        });
+        calculateQiblaDirection(savedLocation.latitude, savedLocation.longitude);
       }
+    } catch (error) {
+      console.error('Error loading location:', error);
+      Alert.alert('Error', 'Failed to load location data');
+    }
+  };
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-      
-      // console.log('=== Current Position ===');
-      // console.log(`Latitude: ${location.coords.latitude}°`);
-      // console.log(`Longitude: ${location.coords.longitude}°`);
-      // console.log(`Altitude: ${location.coords.altitude}m`);
-      // console.log(`Accuracy: ${location.coords.accuracy}m`);
-      // console.log('=====================');
-
-      // Check location accuracy and show appropriate alert
-      if (location.coords.accuracy !== null) {
-        if (location.coords.accuracy > 100) {
-          Alert.alert(
-            'Akurasi Rendah',
-            'Akurasi lokasi sangat rendah (>100m). Mohon pindah ke area terbuka atau tunggu GPS lebih akurat.'
-          );
-        } else if (location.coords.accuracy > 50) {
-          Alert.alert(
-            'Akurasi Sedang',
-            'Akurasi lokasi cukup (>50m). Untuk hasil lebih baik, mohon pindah ke area terbuka.'
-          );
-        }
-      }
-
-      calculateQiblaDirection(location.coords.latitude, location.coords.longitude);
-    })();
-
+  const setupCompass = () => {
     Magnetometer.setUpdateInterval(100);
-    const subscription = Magnetometer.addListener(data => {
+    Magnetometer.addListener(data => {
       let angle = Math.atan2(data.y, data.x) * (180 / Math.PI);
       angle = angle < 0 ? angle + 360 : angle;
       setDegree(angle);
     });
-
-    return () => subscription.remove();
-  }, []);
+  };
 
   const calculateQiblaDirection = (latitude: number, longitude: number) => {
     const KAABA_LAT = 21.422487;
     const KAABA_LNG = 39.826206;
-
+  
     const φ1 = toRadians(latitude);
     const φ2 = toRadians(KAABA_LAT);
     const Δλ = toRadians(KAABA_LNG - longitude);
-
-    const y = Math.sin(Δλ);
-    const x = Math.cos(φ1) * Math.tan(φ2) - Math.sin(φ1) * Math.cos(Δλ);
+  
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
     
     let qibla = toDegrees(Math.atan2(y, x));
     qibla = (qibla + 360) % 360;
-
+  
     setQiblaDirection(qibla);
-  };
-
-  const calculateQiblaDirection_test = (latitude: number, longitude: number) => {
-      // Kiblat Latitud jeung longitude
-      const KAABA_LAT = 21.422487; // 21° 25' 21" LU
-      const KAABA_LNG = 39.826206; // 39° 49' 34" BT
-      
-      
-      const φ1 = toRadians(latitude);
-      const φk = toRadians(KAABA_LAT);
-      const Δλ = toRadians(longitude - KAABA_LNG);
-      
-      const y = Math.sin(Δλ);
-      const x = Math.cos(φ1) * Math.tan(φk) - Math.sin(φ1) * Math.cos(Δλ);
-      
-      let qibla = toDegrees(Math.atan2(y, x));
-      
-      // Normalize to 0-360 degrees
-      qibla = (qibla + 360) % 360;
-      
-      // Calculate UTSB (Utara-Timur-Selatan-Barat) direction
-      const utsbDirection = 270 + (90 - qibla);
-      const normalizedUTSB = (utsbDirection + 360) % 360;
-      
-      setQiblaDirection(normalizedUTSB);
   };
 
   const toRadians = (degrees: number) => degrees * (Math.PI / 180);
@@ -109,9 +79,9 @@ export default function KiblatScreen() {
 
   const getQiblaAccuracy = () => {
     const currentDirection = (degree + qiblaDirection) % 360;
-    const difference = Math.abs(currentDirection - 295);
+    const difference = Math.abs(currentDirection - qiblaDirection);
     
-    if (difference <= 5) {
+    if (difference <= 2) {
       return {
         text: 'Tepat mengarah ke Ka\'bah!',
         color: '#00FF00'
@@ -129,121 +99,96 @@ export default function KiblatScreen() {
     };
   };
 
-  const getQiblaAccuracy_test = () => {
-    const currentDirection = (degree + qiblaDirection) % 360;
-    const difference = Math.abs(currentDirection - 292.142); // Using the example's result of 292° 08' 32.74"
-    
-    if (difference <= 5) {
-        return {
-            text: 'Tepat mengarah ke Ka\'bah!',
-            color: '#00FF00'
-        };
-    }
-    if (difference <= 15) {
-        return {
-            text: 'Hampir tepat, sedikit sesuaikan',
-            color: '#FFD700'
-        };
-    }
-    return {
-        text: 'Sesuaikan arah ke Ka\'bah',
-        color: '#E1BEE7'
-    };
-};
-
-
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#7E57C2', '#4A148C']} style={styles.gradient}>
         <View style={styles.content}>
-        <View style={styles.compassContainer}>
-  <View style={styles.compassCircle}>
-    {/* Inner decorative circle */}
-    <View style={styles.innerCircle} />
-    
-    {/* Compass ring with gradient */}
-    <LinearGradient
-      colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)']}
-      style={styles.compassRing}
-    />
-    
-    {/* Direction arrow and Kaaba marker */}
-    <View style={[styles.arrowContainer, { transform: [{ rotate: `${360 - degree}deg` }] }]}>
-      <FontAwesome5 name="long-arrow-alt-up" size={32} color="#FFD700" />
-      <FontAwesome5
-        name="kaaba"
-        size={20}
-        color="#FFD700"
-        style={[styles.qiblaMarker, { transform: [{ translateY: -90 }] }]}
-      />
-    </View>
+          <View style={styles.compassContainer}>
+            <View style={styles.compassCircle}>
+              <View style={styles.innerCircle} />
+              
+              <LinearGradient
+                colors={['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)']}
+                style={styles.compassRing}
+              />
+              
+              <View style={[styles.arrowContainer, { transform: [{ rotate: `${360 - degree}deg` }] }]}>
+                <FontAwesome5 name="long-arrow-alt-up" size={32} color="#FFD700" />
+                <FontAwesome5
+                  name="kaaba"
+                  size={20}
+                  color="#FFD700"
+                  style={[styles.qiblaMarker, { transform: [{ translateY: -90 }] }]}
+                />
+              </View>
 
-    {/* Cardinal Points with decorative boxes */}
-    {['U', 'T', 'S', 'B'].map((direction, index) => (
-      <View
-        key={direction}
-        style={[
-          styles.cardinalBox,
-          { transform: [{ rotate: `${index * 90}deg` }, { translateY: -110 }] }
-        ]}
-      >
-        <Text style={styles.cardinalText}>{direction}</Text>
-      </View>
-    ))}
-  </View>
-</View>
-
+              {['U', 'T', 'S', 'B'].map((direction, index) => (
+                <View
+                  key={direction}
+                  style={[
+                    styles.cardinalBox,
+                    { transform: [{ rotate: `${index * 90}deg` }, { translateY: -110 }] }
+                  ]}
+                >
+                  <Text style={styles.cardinalText}>{direction}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
 
           <View style={styles.infoContainer}>
             <Text style={styles.degreeText}>
               {Math.round(degree)}° {getCompassDirection(degree)}
             </Text>
             <Text style={[
-                styles.accuracyText,
-                { 
-                    color: getQiblaAccuracy().color,
-                    fontWeight: getQiblaAccuracy().color !== '#E1BEE7' ? 'bold' : 'normal'
-                }
-                ]}>
-                {getQiblaAccuracy().text}
+              styles.accuracyText,
+              { 
+                color: getQiblaAccuracy().color,
+                fontWeight: getQiblaAccuracy().color !== '#E1BEE7' ? 'bold' : 'normal'
+              }
+            ]}>
+              {getQiblaAccuracy().text}
             </Text>
-            {location && (
-                <>
-                  <Text style={styles.locationText}>
-                    Lokasi: {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
+            {locationData && (
+              <>
+                <Text style={styles.locationText}>
+                  Lokasi: {locationData.latitude.toFixed(4)}, {locationData.longitude.toFixed(4)}
+                </Text>
+                <Text style={styles.qiblaText}>
+                  Arah Kiblat: {Math.round(qiblaDirection)}°
+                </Text>
+                {locationData.accuracy !== null && (
+                  <Text style={[
+                    styles.locationText, 
+                    {
+                      color: locationData.accuracy > 100 ? '#FF6B6B' : 
+                             locationData.accuracy > 50 ? '#FFD93D' : '#4BB543'
+                    }
+                  ]}>
+                    Akurasi GPS: {Math.round(locationData.accuracy)}m 
+                    {locationData.accuracy > 100 ? ' (Rendah)' : 
+                     locationData.accuracy > 50 ? ' (Sedang)' : ' (Baik)'}
                   </Text>
-                  <Text style={styles.qiblaText}>
-                    Arah Kiblat: {Math.round(qiblaDirection)}°
-                  </Text>
-                  {location.coords.accuracy !== null && (
-                    <Text style={[styles.locationText, 
-                      {color: location.coords.accuracy > 100 ? '#FF6B6B' : 
-                            location.coords.accuracy > 50 ? '#FFD93D' : '#4BB543'}]}>
-                      Akurasi GPS: {Math.round(location.coords.accuracy)}m 
-                      {location.coords.accuracy > 100 ? ' (Rendah)' : 
-                      location.coords.accuracy > 50 ? ' (Sedang)' : ' (Baik)'}
-                    </Text>
-                  )}
-                </>
-              )}
-
+                )}
+              </>
+            )}
           </View>
 
-            <View style={styles.instructionContainer}>
-                <Text style={styles.instructionTitle}>Cara Menggunakan:</Text>
-                <View style={styles.instructionItem}>
-                <Text style={styles.instructionNumber}>1.</Text>
-                <Text style={styles.instructionText}>
-                    Kalibrasi kompas HP dengan gerakan angka 8
-                </Text>
-                </View>
-                <View style={styles.instructionItem}>
-                <Text style={styles.instructionNumber}>2.</Text>
-                <Text style={styles.instructionText}>
-                    Pastikan HP dalam posisi datar dan sejajar
-                </Text>
-                </View>
+          <View style={styles.instructionContainer}>
+            <Text style={styles.instructionTitle}>Cara Menggunakan:</Text>
+            <View style={styles.instructionItem}>
+              <Text style={styles.instructionNumber}>1.</Text>
+              <Text style={styles.instructionText}>
+                Kalibrasi kompas HP dengan gerakan angka 8
+              </Text>
             </View>
+            <View style={styles.instructionItem}>
+              <Text style={styles.instructionNumber}>2.</Text>
+              <Text style={styles.instructionText}>
+                Pastikan HP dalam posisi datar dan sejajar
+              </Text>
+            </View>
+          </View>
         </View>
       </LinearGradient>
     </View>

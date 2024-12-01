@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
+import { LocationService } from '@/services/LocationService';
 
 interface PrayerTime {
   tanggal: string;
@@ -30,8 +31,22 @@ export default function JadwalShalat() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCurrentLocation();
+    async function setupLocation() {
+      try {
+        const locationData = await LocationService.getStoredLocation();
+        if (locationData && locationData.city) {
+          setCurrentCity(locationData.city);
+          await fetchPrayerTimes(locationData.city.id);
+        }
+      } catch (error) {
+        console.error('Error setting up location:', error);
+        setLoading(false);
+      }
+    }
+  
+    setupLocation();
   }, []);
+  
 
   const getCurrentLocation = async () => {
     try {
