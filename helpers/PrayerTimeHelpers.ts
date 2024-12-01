@@ -1,7 +1,6 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
 
 interface CountdownResult {
     hours: number;
@@ -19,18 +18,13 @@ interface NotificationPayload {
   title: string;
   body: string;
   time: Date;
-  sound: any;
+  data: {
+      prayerName: string;
+      minutesBefore: number;
+  };
+  sound?: any; // Add this to support sound property
 }
 
-// Add sound control
-interface NotificationAction {
-  identifier: string;
-  buttonTitle: string;
-  options: {
-    isDestructive?: boolean;
-    isAuthenticationRequired?: boolean;
-  };
-}
 
 const STOP_SOUND_ACTION = 'STOP_SOUND';
 
@@ -41,6 +35,57 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+const getCreativeMessage = (prayerName: string, minutesBefore: number): string => {
+  const messages: Record<number, Record<string, string>> = {
+    30: {
+      Subuh: "🌙 Persiapkan diri untuk bermunajat di waktu yang penuh keberkahan",
+      Dzuhur: "🌤️ Sebentar lagi waktu istirahat dan shalat Dzuhur",
+      Ashar: "🌅 Jangan biarkan Ashar berlalu, sudah waktunya rehat sejenak",
+      Maghrib: "🌆 Siapkan hati menyambut pergantian hari",
+      Isya: "✨ Penghujung hari akan segera tiba"
+    },
+    15: {
+      Subuh: "🌄 15 menit menuju waktu Subuh, yuk bersiap!",
+      Dzuhur: "☀️ Sebentar lagi waktu Dzuhur tiba",
+      Ashar: "🌞 Waktu Ashar hampir tiba, jangan ditunda",
+      Maghrib: "🌅 Maghrib akan segera masuk",
+      Isya: "🌙 Isya sebentar lagi, sempurnakan ibadah hari ini"
+    },
+    5: {
+      Subuh: "⏰ Segera bangun, waktu Subuh hampir tiba!",
+      Dzuhur: "⚡ 5 menit lagi Dzuhur, sudah wudhu?",
+      Ashar: "⚡ Ashar sebentar lagi masuk!",
+      Maghrib: "🕌 Bersiap untuk Maghrib!",
+      Isya: "🌟 Isya akan berkumandang!"
+    },
+    0: {
+      Subuh: "🕌 Allahu Akbar! Waktu Subuh telah tiba",
+      Dzuhur: "🕌 Allahu Akbar! Waktu Dzuhur telah tiba",
+      Ashar: "🕌 Allahu Akbar! Waktu Ashar telah tiba",
+      Maghrib: "🕌 Allahu Akbar! Waktu Maghrib telah tiba",
+      Isya: "🕌 Allahu Akbar! Waktu Isya telah tiba"
+    }
+  };
+  
+  return messages[minutesBefore][prayerName] || "Waktu shalat akan segera tiba";
+};
+const getNotificationSound = (prayerName: string, minutesBefore: number) => {
+  if (minutesBefore === 0) {
+    return {
+      sound: prayerName === 'Subuh' ? 
+        require('@/assets/audio/adzan_shubuh.mp3') : 
+        require('@/assets/audio/adzan.mp3'),
+      shouldPlaySound: true
+    };
+  }
+  // For reminders before prayer time, use default notification sound
+  return {
+    sound: 'default',
+    shouldPlaySound: true
+  };
+};
+
 
 export const PrayerTimeHelpers = {
   fetchPrayerTimes: async (cityId: string) => {
@@ -56,37 +101,50 @@ export const PrayerTimeHelpers = {
     for (const prayer of preferences) {
       if (prayer.isEnabled) {
         const prayerTime = prayerTimes[prayer.prayerName.toLowerCase()];
-        const soundFile = prayer.prayerName === 'Subuh' ? 
-          require('@/assets/audio/adzan_shubuh.mp3') :
-          require('@/assets/audio/adzan.mp3');
+        
+        for (const interval of [30, 15, 5, 0]) {
+          const notificationTime = PrayerTimeHelpers.calculateNotificationTime(prayerTime, interval);
           
-        await PrayerTimeHelpers.scheduleNotification({
-          title: `Waktu ${prayer.prayerName}`,
-          body: `${prayer.minutesBefore} menit menuju waktu ${prayer.prayerName}`,
-          time: PrayerTimeHelpers.calculateNotificationTime(prayerTime, prayer.minutesBefore),
-          sound: soundFile
-        });
+          await PrayerTimeHelpers.scheduleNotification({
+            title: `Waktu ${prayer.prayerName}`,
+            body: getCreativeMessage(prayer.prayerName, interval),
+            time: notificationTime,
+            data: {
+              prayerName: prayer.prayerName,
+              minutesBefore: interval
+            }
+          });
+        }
       }
     }
   },
 
   scheduleNotification: async (notification: NotificationPayload) => {
-    const timeInSeconds = Math.floor((notification.time.getTime() - Date.now()) / 1000);
+    const { prayerName, minutesBefore } = notification.data;
+    const soundConfig = getNotificationSound(prayerName, minutesBefore);
     
-    if (timeInSeconds > 0) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: notification.title,
-          body: notification.body,
-          sound: notification.sound,
-          data: { type: 'prayer' },
-          categoryIdentifier: 'prayer'
-        },
-        trigger: {
-          seconds: timeInSeconds,
-          channelId: 'prayer-times'
-        },
-      });
+    try {
+      const timeInSeconds = Math.floor((notification.time.getTime() - Date.now()) / 1000);
+      
+      if (timeInSeconds <= 0) return; // Skip jika waktu sudah lewat
+      
+      if (timeInSeconds > 0) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: notification.title,
+            body: notification.body,
+            sound: soundConfig.sound,
+            data: notification.data,
+            categoryIdentifier: 'prayer'
+          },
+          trigger: {
+            seconds: timeInSeconds,
+            channelId: 'prayer-times'
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to schedule notification:', error);
     }
   },
 
@@ -96,19 +154,17 @@ export const PrayerTimeHelpers = {
         name: 'Prayer Times',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#7E57C2',
-        sound: 'adzan.mp3'
+        lightColor: '#7E57C2'
       });
 
-      // Set up notification categories with actions
       await Notifications.setNotificationCategoryAsync('prayer', [
         {
           identifier: STOP_SOUND_ACTION,
-          buttonTitle: 'Stop Adzan',
+          buttonTitle: 'Hentikan Adzan',
           options: {
             isDestructive: true,
           },
-        },
+        }
       ]);
     }
 

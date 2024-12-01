@@ -103,30 +103,31 @@ export default function JadwalShalat() {
       setNotificationStates(newStates);
 
       const preferences: NotificationPreference[] = Object.keys(newStates).map(name => ({
-        prayerName: name,
-        isEnabled: newStates[name],
-        soundType: name === 'Subuh' ? 'fajr' : 'regular' as const,
-        minutesBefore: 10
+          prayerName: name,
+          isEnabled: newStates[name],
+          soundType: name === 'Subuh' ? 'fajr' : 'regular',
+          minutesBefore: 10
       }));
 
       await AsyncStorage.setItem('notificationPreferences', JSON.stringify(preferences));
       if (schedule) {
-        await PrayerTimeHelpers.scheduleNotifications(schedule, preferences);
+          await PrayerTimeHelpers.scheduleNotifications(schedule, preferences);
       }
   };
 
-  const testNotification = async () => {
-    const testTime = new Date();
-    const adzan = require('@/assets/audio/adzan.mp3');
-    testTime.setSeconds(testTime.getSeconds() + 10); // Will trigger in 5 seconds
+
+  // const testNotification = async () => {
+  //   const testTime = new Date();
+  //   const adzan = require('@/assets/audio/adzan.mp3');
+  //   testTime.setSeconds(testTime.getSeconds() + 10); // Will trigger in 5 seconds
     
-    await PrayerTimeHelpers.scheduleNotification({
-      title: "Test Adzan",
-      body: "Testing prayer notification sound",
-      time: testTime,
-      sound: adzan
-    });
-  };
+  //   await PrayerTimeHelpers.scheduleNotification({
+  //     title: "Test Adzan",
+  //     body: "Testing prayer notification sound",
+  //     time: testTime,
+  //     sound: adzan
+  //   });
+  // };
   
   
   const downloadMonthlySchedule = async () => {
@@ -294,35 +295,57 @@ export default function JadwalShalat() {
     }
   };
 
-  const PrayerTimeCard = ({ title, time, icon }: { title: string; time: string; icon: keyof typeof MaterialCommunityIcons.glyphMap }) => (
-    <TouchableOpacity 
-      style={styles.prayerCard}
-      accessible={true}
-      accessibilityLabel={`${title} prayer time at ${time}. Toggle notification switch to receive reminders 10 minutes before`}
-    >
-      <LinearGradient
-        colors={['#9575CD', '#7E57C2']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.prayerGradient}
+  const PrayerTimeCard = ({ title, time, icon }: { title: string; time: string; icon: keyof typeof MaterialCommunityIcons.glyphMap }) => {
+    const nextPrayer = PrayerTimeHelpers.calculateNextPrayer(schedule);
+    const isNextPrayer = nextPrayer?.name === title;
+    
+    return (
+      <TouchableOpacity 
+        style={[styles.prayerCard, isNextPrayer && styles.nextPrayerCard]}
+        accessible={true}
+        accessibilityLabel={`Waktu ${title} pukul ${time}`}
       >
-        <MaterialCommunityIcons name={icon} size={32} color="#FFF" />
-        <Text style={styles.prayerTitle}>{title}</Text>
-        <Text style={styles.prayerTime}>{time}</Text>
-        <View style={styles.notificationToggle}>
-          <Switch
-            value={notificationStates[title] || false}
-            onValueChange={(enabled) => handleNotificationToggle(title, enabled)}
-            trackColor={{ false: '#767577', true: '#4A148C' }}
-            thumbColor={notificationStates[title] ? '#7E57C2' : '#f4f3f4'}
-            accessibilityLabel={`Toggle ${title} prayer notification`}
-            accessibilityHint={`Activates reminder 10 minutes before ${title} prayer time`}
+        <LinearGradient
+          colors={isNextPrayer ? ['#4A148C', '#7E57C2'] : ['#9575CD', '#7E57C2']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.prayerGradient}
+        >
+          <MaterialCommunityIcons 
+            name={icon} 
+            size={32} 
+            color="#FFF" 
+            style={styles.prayerIcon}
           />
-        </View>
-        <Text style={styles.reminderText}>Pengingat 10 menit sebelumnya</Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
+          <Text style={styles.prayerTitle}>{title}</Text>
+          <Text style={styles.prayerTime}>{time}</Text>
+          
+          {isNextPrayer && (
+            <View style={styles.nextPrayerBadge}>
+              <Text style={styles.nextPrayerText}>Waktu Shalat Berikutnya</Text>
+            </View>
+          )}
+  
+          <View style={styles.notificationToggle}>
+            <Switch
+              value={notificationStates[title] || false}
+              onValueChange={(enabled) => handleNotificationToggle(title, enabled)}
+              trackColor={{ false: '#767577', true: '#4A148C' }}
+              thumbColor={notificationStates[title] ? '#7E57C2' : '#f4f3f4'}
+              accessibilityLabel={`Aktifkan notifikasi ${title}`}
+            />
+          </View>
+  
+          <View style={styles.reminderInfo}>
+            <MaterialCommunityIcons name="bell-outline" size={16} color="#E1BEE7" />
+            <Text style={styles.reminderText}>
+              30, 15, 5 menit sebelum waktu {title}
+            </Text>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  };
   
   if (loading) {
     return (
@@ -507,11 +530,37 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 14
   },
+  // End Test
+  nextPrayerCard: {
+  transform: [{scale: 1.02}],
+  elevation: 8,
+  },
+  prayerIcon: {
+    marginBottom: 8,
+  },
+  nextPrayerBadge: {
+    backgroundColor: '#4A148C',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  nextPrayerText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  reminderInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    padding: 4,
+    borderRadius: 8,
+  },
   reminderText: {
     color: '#E1BEE7',
     fontSize: 10,
-    fontStyle: 'italic',
-    marginTop: 4,
-    textAlign: 'center',
-  }
+    marginLeft: 4,
+  },
 });

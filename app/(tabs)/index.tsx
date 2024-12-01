@@ -7,7 +7,8 @@ import { ImageBackground } from 'react-native';
 import { LocationService } from '@/services/LocationService';
 import { useEffect, useState } from 'react';
 import { PrayerTimeHelpers } from '@/helpers/PrayerTimeHelpers';
-
+import { useAdConfig } from '@/hooks/useAdConfig';
+import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 
 // Add these interfaces
 interface PrayerTime {
@@ -27,6 +28,21 @@ export default function LayarMenuUtama() {
     isPermitted: false
   });
   const [countdown, setCountdown] = useState<string>('');
+  const adConfig = useAdConfig();
+  
+  useEffect(() => {
+    if (adConfig?.ads.enabled && adConfig.ads.units.interstitial.enabled) {
+      const interstitial = InterstitialAd.createForAdRequest(adConfig.ads.units.interstitial.id);
+      
+      const unsubscribe = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+        interstitial.show();
+      });
+      
+      interstitial.load();
+      
+      return unsubscribe;
+    }
+  }, [adConfig]);
 
   useEffect(() => {
     checkLocationPermission();

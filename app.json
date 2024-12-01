@@ -52,6 +52,13 @@
             "./assets/audio/adzan_shubuh.mp3"
           ]
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-2147056952925982~8318395213",
+          "iosAppId": "ca-app-pub-2147056952925982~8318395213"
+        }
       ]
     ],
     "experiments": {
