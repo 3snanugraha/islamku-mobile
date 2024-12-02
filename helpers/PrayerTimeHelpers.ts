@@ -22,17 +22,17 @@ interface NotificationPayload {
       prayerName: string;
       minutesBefore: number;
   };
-  sound?: any; // Add this to support sound property
 }
-
 
 const STOP_SOUND_ACTION = 'STOP_SOUND';
 
+// Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    priority: Notifications.AndroidNotificationPriority.MAX
   }),
 });
 
@@ -70,22 +70,6 @@ const getCreativeMessage = (prayerName: string, minutesBefore: number): string =
   
   return messages[minutesBefore][prayerName] || "Waktu shalat akan segera tiba";
 };
-const getNotificationSound = (prayerName: string, minutesBefore: number) => {
-  if (minutesBefore === 0) {
-    return {
-      sound: prayerName === 'Subuh' ? 
-        require('@/assets/audio/adzan_shubuh.mp3') : 
-        require('@/assets/audio/adzan.mp3'),
-      shouldPlaySound: true
-    };
-  }
-  // For reminders before prayer time, use default notification sound
-  return {
-    sound: 'default',
-    shouldPlaySound: true
-  };
-};
-
 
 export const PrayerTimeHelpers = {
   fetchPrayerTimes: async (cityId: string) => {
@@ -121,28 +105,30 @@ export const PrayerTimeHelpers = {
 
   scheduleNotification: async (notification: NotificationPayload) => {
     const { prayerName, minutesBefore } = notification.data;
-    const soundConfig = getNotificationSound(prayerName, minutesBefore);
     
     try {
       const timeInSeconds = Math.floor((notification.time.getTime() - Date.now()) / 1000);
       
-      if (timeInSeconds <= 0) return; // Skip jika waktu sudah lewat
+      if (timeInSeconds <= 0) return;
       
-      if (timeInSeconds > 0) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: notification.title,
-            body: notification.body,
-            sound: soundConfig.sound,
-            data: notification.data,
-            categoryIdentifier: 'prayer'
-          },
-          trigger: {
-            seconds: timeInSeconds,
-            channelId: 'prayer-times'
-          },
-        });
-      }
+      const soundName = minutesBefore === 0 ? 
+        (prayerName === 'Subuh' ? 'adzan_shubuh' : 'adzan') : 
+        'default';
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: notification.title,
+          body: notification.body,
+          sound: Platform.OS === 'android' ? soundName : undefined,
+          data: notification.data,
+          categoryIdentifier: 'prayer',
+          priority: Notifications.AndroidNotificationPriority.MAX
+        },
+        trigger: {
+          seconds: timeInSeconds,
+          channelId: 'prayer-times'
+        },
+      });
     } catch (error) {
       console.error('Failed to schedule notification:', error);
     }
@@ -154,7 +140,10 @@ export const PrayerTimeHelpers = {
         name: 'Prayer Times',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#7E57C2'
+        lightColor: '#7E57C2',
+        sound: 'adzan',
+        enableVibrate: true,
+        enableLights: true,
       });
 
       await Notifications.setNotificationCategoryAsync('prayer', [

@@ -17,15 +17,25 @@ interface LocationData {
   };
 }
 
+
 export const LocationService = {
+  async clearStoredLocation() {
+    await AsyncStorage.removeItem(STORAGE_KEYS.LOCATION);
+  },
+
   async initializeLocation() {
+    // Clear existing location data first
+    await this.clearStoredLocation();
+  
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       throw new Error('Location permission denied');
     }
-
-    // Get current position
-    const location = await Location.getCurrentPositionAsync({});
+  
+    // Get current position with high accuracy
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High
+    });
     
     // Get city data
     const geocode = await Location.reverseGeocodeAsync({

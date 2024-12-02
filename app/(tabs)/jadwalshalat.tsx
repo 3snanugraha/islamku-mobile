@@ -115,21 +115,22 @@ export default function JadwalShalat() {
       }
   };
 
-
-  // const testNotification = async () => {
-  //   const testTime = new Date();
-  //   const adzan = require('@/assets/audio/adzan.mp3');
-  //   testTime.setSeconds(testTime.getSeconds() + 10); // Will trigger in 5 seconds
+  const testNotification = async () => {
+    const testTime = new Date();
+    testTime.setSeconds(testTime.getSeconds() + 5); // Will trigger in 5 seconds
     
-  //   await PrayerTimeHelpers.scheduleNotification({
-  //     title: "Test Adzan",
-  //     body: "Testing prayer notification sound",
-  //     time: testTime,
-  //     sound: adzan
-  //   });
-  // };
+    await PrayerTimeHelpers.scheduleNotification({
+      title: "Test Adzan",
+      body: "Testing adzan notification sound",
+      time: testTime,
+      data: {
+        prayerName: 'Test',
+        minutesBefore: 0
+      }
+    });
+  };
   
-  
+    
   const downloadMonthlySchedule = async () => {
     if (!currentCity) return;
   
@@ -388,6 +389,14 @@ export default function JadwalShalat() {
       </TouchableOpacity> */}
       
       </View>
+      
+      {/* Test Purpose */}
+      <TouchableOpacity 
+        style={styles.testButton}
+        onPress={testNotification}
+      >
+        <Text style={styles.buttonText}>Test Adzan (5s)</Text>
+      </TouchableOpacity>
 
       <ScrollView style={styles.content}>
         {schedule && (
