@@ -13,14 +13,18 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
     if (cityId) {
       const times = await PrayerTimeHelpers.fetchPrayerTimes(cityId);
-      await PrayerTimeHelpers.scheduleNotifications(times, preferences);
-      return BackgroundFetch.BackgroundFetchResult.NewData;
+      if (times) {
+        await PrayerTimeHelpers.scheduleNotifications(times, preferences);
+        return BackgroundFetch.BackgroundFetchResult.NewData;
+      }
     }
     return BackgroundFetch.BackgroundFetchResult.NoData;
   } catch (error) {
+    console.log('Background fetch failed:', error);
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });
+
 
 export async function registerBackgroundFetch() {
   try {
@@ -29,7 +33,18 @@ export async function registerBackgroundFetch() {
       stopOnTerminate: false,
       startOnBoot: true,
     });
+
+    // Initial scheduling when registering
+    const cityId = await AsyncStorage.getItem('selectedCityId');
+    const preferencesStr = await AsyncStorage.getItem('notificationPreferences');
+    const preferences = preferencesStr ? JSON.parse(preferencesStr) : [];
+
+    if (cityId) {
+      const times = await PrayerTimeHelpers.fetchPrayerTimes(cityId);
+      await PrayerTimeHelpers.scheduleNotifications(times, preferences);
+    }
   } catch (err) {
     console.log("Task Register failed:", err);
   }
 }
+

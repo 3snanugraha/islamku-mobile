@@ -69,7 +69,7 @@ export default function StartScreen() {
   }
 
   const handleGetStarted = (route: string) => {
-    router.push('/(tabs)');
+    router.replace('/(tabs)');
   };
 
   const renderItem = ({ item }: { item: typeof slides[0] }) => (

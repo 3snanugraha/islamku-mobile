@@ -7,10 +7,10 @@ interface CountdownResult {
     minutes: number;
 }
 
-interface NotificationPreference {
+export interface NotificationPreference {
   prayerName: string;
   isEnabled: boolean;
-  soundType: 'regular' | 'fajr';
+  soundType: 'regular' | 'fajr' | 'none';
   minutesBefore: number;
 }
 
@@ -24,9 +24,48 @@ interface NotificationPayload {
   };
 }
 
+interface NotificationSound {
+  type: 'adzan' | 'adzan_shubuh' | 'default' | undefined;
+  channelId: string;
+}
+
+interface NotificationQueue {
+  notifications: NotificationPayload[];
+  isProcessing: boolean;
+}
+
 const STOP_SOUND_ACTION = 'STOP_SOUND';
 
-// Configure notification handler
+const notificationQueue: NotificationQueue = {
+  notifications: [],
+  isProcessing: false
+};
+
+const queueManager = {
+  add: (notification: NotificationPayload) => {
+    notificationQueue.notifications.push(notification);
+    if (!notificationQueue.isProcessing) {
+      queueManager.processQueue();
+    }
+  },
+
+  processQueue: async () => {
+    if (notificationQueue.notifications.length === 0) {
+      notificationQueue.isProcessing = false;
+      return;
+    }
+
+    notificationQueue.isProcessing = true;
+    const notification = notificationQueue.notifications.shift();
+
+    if (notification) {
+      await PrayerTimeHelpers.scheduleNotification(notification);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      queueManager.processQueue();
+    }
+  }
+};
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -71,6 +110,25 @@ const getCreativeMessage = (prayerName: string, minutesBefore: number): string =
   return messages[minutesBefore][prayerName] || "Waktu shalat akan segera tiba";
 };
 
+const getNotificationSound = (prayerName: string, minutesBefore: number): NotificationSound => {
+  // Only play adzan sound at prayer time (minutesBefore === 0)
+  if (minutesBefore !== 0) {
+      return { type: 'default', channelId: 'prayer-reminder' };
+  }
+
+  const prayerLower = prayerName.toLowerCase();
+  
+  if (['imsak', 'terbit', 'dhuha'].includes(prayerLower)) {
+      return { type: 'default', channelId: 'prayer-reminder' };
+  }
+
+  if (prayerLower === 'subuh') {
+      return { type: 'adzan_shubuh', channelId: 'prayer-times-fajr' };
+  }
+
+  return { type: 'adzan', channelId: 'prayer-times' };
+};
+
 export const PrayerTimeHelpers = {
   fetchPrayerTimes: async (cityId: string) => {
     const today = new Date().toISOString().split('T')[0];
@@ -80,53 +138,62 @@ export const PrayerTimeHelpers = {
   },
 
   scheduleNotifications: async (prayerTimes: any, preferences: NotificationPreference[]) => {
-    await Notifications.cancelAllScheduledNotificationsAsync();
-    
-    for (const prayer of preferences) {
-      if (prayer.isEnabled) {
-        const prayerTime = prayerTimes[prayer.prayerName.toLowerCase()];
-        
-        for (const interval of [30, 15, 5, 0]) {
-          const notificationTime = PrayerTimeHelpers.calculateNotificationTime(prayerTime, interval);
-          
-          await PrayerTimeHelpers.scheduleNotification({
-            title: `Waktu ${prayer.prayerName}`,
-            body: getCreativeMessage(prayer.prayerName, interval),
-            time: notificationTime,
-            data: {
-              prayerName: prayer.prayerName,
-              minutesBefore: interval
-            }
-          });
-        }
+      await Notifications.cancelAllScheduledNotificationsAsync();
+      
+      for (const prayer of preferences) {
+          if (prayer.isEnabled) {
+              const prayerTime = prayerTimes[prayer.prayerName.toLowerCase()];
+              const intervals = [30, 15, 5, 0];
+              
+              for (const interval of intervals) {
+                  const scheduledTime = PrayerTimeHelpers.calculateNotificationTime(prayerTime, interval);
+                  
+                  // Only schedule if the time is in the future
+                  if (scheduledTime.getTime() > Date.now()) {
+                      // For next day if current time has passed
+                      if (scheduledTime.getTime() < Date.now()) {
+                          scheduledTime.setDate(scheduledTime.getDate() + 1);
+                      }
+                      
+                      queueManager.add({
+                          title: `Waktu ${prayer.prayerName}`,
+                          body: getCreativeMessage(prayer.prayerName, interval),
+                          time: scheduledTime,
+                          data: {
+                              prayerName: prayer.prayerName,
+                              minutesBefore: interval
+                          }
+                      });
+                  }
+              }
+          }
       }
-    }
   },
 
   scheduleNotification: async (notification: NotificationPayload) => {
     const { prayerName, minutesBefore } = notification.data;
     
     try {
-      const timeInSeconds = Math.floor((notification.time.getTime() - Date.now()) / 1000);
+      const currentTime = new Date();
+      const scheduledTime = notification.time;
+      const timeInSeconds = Math.floor((scheduledTime.getTime() - currentTime.getTime()) / 1000);
       
       if (timeInSeconds <= 0) return;
       
-      const soundName = minutesBefore === 0 ? 
-        (prayerName === 'Subuh' ? 'adzan_shubuh' : 'adzan') : 
-        'default';
-
+      const { type: soundName, channelId } = getNotificationSound(prayerName, minutesBefore);
+  
       await Notifications.scheduleNotificationAsync({
         content: {
           title: notification.title,
           body: notification.body,
-          sound: Platform.OS === 'android' ? soundName : undefined,
+          sound: soundName,
           data: notification.data,
           categoryIdentifier: 'prayer',
           priority: Notifications.AndroidNotificationPriority.MAX
         },
         trigger: {
           seconds: timeInSeconds,
-          channelId: 'prayer-times'
+          channelId
         },
       });
     } catch (error) {
@@ -135,39 +202,59 @@ export const PrayerTimeHelpers = {
   },
 
   setupNotifications: async () => {
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('prayer-times', {
-        name: 'Prayer Times',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#7E57C2',
-        sound: 'adzan',
-        enableVibrate: true,
-        enableLights: true,
-      });
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('prayer-reminder', {
+          name: 'Prayer Reminders',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#7E57C2',
+          sound: 'default',
+          enableVibrate: true,
+          enableLights: true,
+        });
 
-      await Notifications.setNotificationCategoryAsync('prayer', [
-        {
-          identifier: STOP_SOUND_ACTION,
-          buttonTitle: 'Hentikan Adzan',
-          options: {
-            isDestructive: true,
-          },
-        }
-      ]);
-    }
+        await Notifications.setNotificationChannelAsync('prayer-times', {
+          name: 'Prayer Times',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#7E57C2',
+          sound: 'adzan',
+          enableVibrate: true,
+          enableLights: true,
+        });
 
-    if (Device.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+        await Notifications.setNotificationChannelAsync('prayer-times-fajr', {
+          name: 'Fajr Prayer Times',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#7E57C2',
+          sound: 'adzan_shubuh',
+          enableVibrate: true,
+          enableLights: true,
+        });
+
+        await Notifications.setNotificationCategoryAsync('prayer', [
+          {
+            identifier: STOP_SOUND_ACTION,
+            buttonTitle: 'Hentikan Adzan',
+            options: {
+              isDestructive: true,
+            },
+          }
+        ]);
       }
-      return finalStatus === 'granted';
-    }
-    
-    return false;
+
+      if (Device.isDevice) {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        return finalStatus === 'granted';
+      }
+      
+      return false;
   },
 
   calculateNextPrayer: (schedule: any) => {
@@ -222,9 +309,17 @@ export const PrayerTimeHelpers = {
   },
 
   calculateNotificationTime: (prayerTime: string, minutesBefore: number): Date => {
-    const [hours, minutes] = prayerTime.split(':').map(Number);
-    const notificationTime = new Date();
-    notificationTime.setHours(hours, minutes - minutesBefore, 0);
-    return notificationTime;
+      const [hours, minutes] = prayerTime.split(':').map(Number);
+      const notificationTime = new Date();
+      
+      notificationTime.setHours(hours, minutes - minutesBefore, 0, 0);
+      
+      // If the calculated time is in the past, schedule for next day
+      if (notificationTime.getTime() <= Date.now()) {
+          notificationTime.setDate(notificationTime.getDate() + 1);
+      }
+      
+      return notificationTime;
   }
+
 };

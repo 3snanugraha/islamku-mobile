@@ -23,7 +23,8 @@
         "backgroundColor": "#ffffff",
         "enableProguard": true,
         "enableShrinkResources": true,
-        "enableR8": true
+        "enableR8": true,
+        "useNextNotificationsApi": true
       },
       "package": "com.islamku.app",
       "permissions": [
@@ -49,10 +50,33 @@
         {
           "icon": "./assets/images/islamku_logos.png",
           "color": "#7E57C2",
+          "sounds": ["./assets/audio/adzan.mp3", "./assets/audio/adzan_shubuh.mp3"],
           "defaultChannel": "prayer-times",
-          "sounds": [
-            "./assets/audio/adzan.mp3",
-            "./assets/audio/adzan_shubuh.mp3"
+          "channels": [
+            {
+              "name": "prayer-reminder",
+              "importance": "high",
+              "sound": "default",
+              "enableVibrate": true,
+              "vibrationPattern": [0, 250, 250, 250],
+              "lightColor": "#7E57C2"
+            },
+            {
+              "name": "prayer-times",
+              "importance": "max",
+              "sound": "adzan",
+              "enableVibrate": true,
+              "vibrationPattern": [0, 250, 250, 250],
+              "lightColor": "#7E57C2"
+            },
+            {
+              "name": "prayer-times-fajr",
+              "importance": "max",
+              "sound": "adzan_shubuh",
+              "enableVibrate": true,
+              "vibrationPattern": [0, 250, 250, 250],
+              "lightColor": "#7E57C2"
+            }
           ]
         }
       ],
@@ -68,8 +92,11 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {
+        "origin": false
+      },
       "eas": {
-        "projectId": "4f686e83-ab07-45bc-a041-88f49ca43f78"
+        "projectId": "d85c7b6c-9030-47bf-b677-0a1d7f915f1f"
       }
     }
   }

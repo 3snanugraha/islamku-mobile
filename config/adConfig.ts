@@ -12,7 +12,18 @@ export interface AdConfig {
       banner: AdUnit;
       interstitial: AdUnit;
     }
+  };
+  donations: {
+    lastUpdated: string;
+    donors: Donor[];
   }
+}
+
+interface Donor {
+  name: string;
+  amount: string;
+  date: string;
+  message: string;
 }
 
 interface AdUnit {

@@ -160,9 +160,11 @@ export default function LayarMenuUtama() {
                         <Text style={styles.countdownText}>
                           {locationState.countdown}
                         </Text>
-                        <Text style={styles.viewScheduleText}>
-                          Lihat Waktu →
-                        </Text>
+                        <View style={styles.viewContainer}>
+                          <Text style={styles.viewScheduleText}>
+                            Lihat Waktu →
+                          </Text>
+                        </View>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -495,9 +497,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 4,
   },
+  viewContainer: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginTop: 8,
+  },
   viewScheduleText: {
     color: '#FFF',
     fontSize: 14,
-    marginTop: 8,
   }
 });

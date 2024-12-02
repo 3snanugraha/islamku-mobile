@@ -22,7 +22,13 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_DB_HOST": "$EXPO_PUBLIC_DB_HOST",
+        "EXPO_PUBLIC_DB_USER": "$EXPO_PUBLIC_DB_USER",
+        "EXPO_PUBLIC_DB_PASS": "$EXPO_PUBLIC_DB_PASS"
+      }
     }
   },
   "submit": {

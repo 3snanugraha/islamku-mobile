@@ -1,19 +1,53 @@
-import { StyleSheet, StatusBar, TouchableOpacity, Clipboard } from 'react-native';
+import { StyleSheet, StatusBar, TouchableOpacity, Clipboard, FlatList } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAdConfig } from '@/hooks/useAdConfig';
+
+interface Donor {
+  name: string;
+  amount: string;
+  date: string;
+  message: string;
+}
 
 export default function DonasiScreen() {
   const [copied, setCopied] = useState(false);
   const rekeningNumber = '1770021679532';
+  const adConfig = useAdConfig();
 
   const copyToClipboard = () => {
     Clipboard.setString(rekeningNumber);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+
+  const renderDonor = ({ item }: { item: Donor }) => (
+    <ThemedView style={styles.donorCard}>
+      <LinearGradient
+        colors={['#9575CD', '#7E57C2']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.donorGradient}
+      >
+        <ThemedView style={styles.donorHeader}>
+          <ThemedText style={styles.donorName}>{item.name}</ThemedText>
+          <ThemedText style={styles.donorAmount}>Rp {item.amount}</ThemedText>
+        </ThemedView>
+        <ThemedText style={styles.donorDate}>
+          {new Date(item.date).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </ThemedText>
+        <ThemedText style={styles.donorMessage}>"{item.message}"</ThemedText>
+      </LinearGradient>
+    </ThemedView>
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -37,11 +71,6 @@ export default function DonasiScreen() {
         dan memberikan pengalaman terbaik dalam menjalankan ibadah sehari-hari.
       </ThemedText>
 
-      <ThemedText style={styles.message}>
-        Setiap donasi yang Anda berikan akan digunakan untuk pengembangan aplikasi 
-        dan penyediaan konten-konten islami yang berkualitas.
-      </ThemedText>
-
       <ThemedView style={styles.bankContainer}>
         <ThemedText style={styles.bankInfo}>Bank Mandiri</ThemedText>
         <ThemedText style={styles.bankInfo}>a.n Trisna Nugraha</ThemedText>
@@ -55,6 +84,22 @@ export default function DonasiScreen() {
         </TouchableOpacity>
         {copied && <ThemedText style={styles.copiedText}>Nomor rekening tersalin!</ThemedText>}
       </ThemedView>
+
+      {adConfig?.donations?.donors && (
+        <ThemedView style={styles.donorsContainer}>
+          <ThemedText style={styles.donorsTitle}>
+            Jazakumullah Khair untuk Para Donatur
+          </ThemedText>
+          <FlatList
+            data={adConfig.donations.donors}
+            renderItem={renderDonor}
+            keyExtractor={(item, index) => index.toString()}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.donorsList}
+          />
+        </ThemedView>
+      )}
 
       <ThemedText style={styles.footer}>
         Jazakumullah khairan katsiran atas dukungan Anda 🤲
@@ -78,61 +123,122 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  copiedText: {
+    color: '#A5D6A7',
+    marginTop: 10,
+    fontSize: 14,
+  },
   icon: {
-    marginBottom: 20,
+    marginBottom: 12,
     opacity: 0.9,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 20,
+    marginBottom: 8,
     textAlign: 'center',
   },
   message: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#E1BEE7',
     textAlign: 'center',
-    marginBottom: 15,
-    lineHeight: 24,
+    marginBottom: 8,
+    lineHeight: 18,
   },
   bankContainer: {
     backgroundColor: 'rgba(126, 87, 194, 0.8)',
-    padding: 20,
-    borderRadius: 15,
+    padding: 12,
+    borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 8,
   },
   bankInfo: {
     color: '#FFFFFF',
-    fontSize: 18,
-    marginBottom: 10,
+    fontSize: 14,
+    marginBottom: 6,
     fontWeight: '600',
   },
   rekeningContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(74, 20, 140, 0.5)',
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 6,
   },
   rekeningText: {
     color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginRight: 10,
-  },
-  copiedText: {
-    color: '#A5D6A7',
-    marginTop: 10,
     fontSize: 14,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  donorsContainer: {
+    width: '100%',
+    marginTop: 12,
+    marginBottom: 12,
+    backgroundColor: 'rgba(126, 87, 194, 0.8)',
+    padding: 10,
+    borderRadius: 10,
+  },
+  donorsTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+    color: '#FFFFFF',
+  },
+  donorsList: {
+    paddingHorizontal: 5,
+  },
+  donorCard: {
+    width: 200,
+    marginHorizontal: 5,
+    borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 3,
+    height: 100,
+  },
+  donorGradient: {
+    padding: 10,
+    height: '100%',
+    justifyContent: 'space-between',
+  },
+  donorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: '100%',
+    marginBottom: 4,
+    paddingBottom: 4,
+  },
+  donorName: {
+    fontSize: 12,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  donorAmount: {
+    fontSize: 12,
+    color: '#A5D6A7',
+    fontWeight: '600',
+  },
+  donorDate: {
+    fontSize: 10,
+    color: '#E1BEE7',
+    marginBottom: 4,
+  },
+  donorMessage: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
   footer: {
     color: '#E1BEE7',
-    fontSize: 16,
-    marginTop: 30,
+    fontSize: 12,
+    marginTop: 6,
     fontStyle: 'italic',
   }
 });

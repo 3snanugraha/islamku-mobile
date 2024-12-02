@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, View, Text, ScrollView, Alert } from 'react-native';
+import { TouchableOpacity, StyleSheet, View, Text, ScrollView, Alert, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Sharing from 'expo-sharing';
@@ -7,8 +7,9 @@ import * as Print from 'expo-print';
 import { LocationService } from '@/services/LocationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Switch } from 'react-native';
-import { PrayerTimeHelpers } from '@/helpers/PrayerTimeHelpers';
+import { PrayerTimeHelpers, NotificationPreference } from '@/helpers/PrayerTimeHelpers';
 import * as Notifications from 'expo-notifications';
+import { registerBackgroundFetch } from '@/services/BackgroundService';
 
 interface PrayerTime {
   tanggal: string;
@@ -26,13 +27,6 @@ interface PrayerTime {
 interface NotificationResponse {
   actionIdentifier: string;
   notification: Notifications.Notification;
-}
-
-interface NotificationPreference {
-  prayerName: string;
-  isEnabled: boolean;
-  soundType: 'regular' | 'fajr';
-  minutesBefore: number;
 }
 
 interface PrayerNotificationState {
@@ -76,6 +70,7 @@ export default function JadwalShalat() {
         if (locationData && locationData.city) {
           setCurrentCity(locationData.city);
           await fetchPrayerTimes(locationData.city.id);
+          // logScheduleDetails(); //Logging Aktif
         }
       } catch (error) {
         console.error('Error setting up location:', error);
@@ -97,40 +92,103 @@ export default function JadwalShalat() {
     return () => subscription.remove();
   }, []);
   
+  // Update the initial state setup in useEffect
+  useEffect(() => {
+    async function setupNotifications() {
+        const permissionGranted = await PrayerTimeHelpers.setupNotifications();
+        if (permissionGranted) {
+            const savedPrefs = await AsyncStorage.getItem('notificationPreferences');
+            if (savedPrefs) {
+                const prefs = JSON.parse(savedPrefs);
+                const states: PrayerNotificationState = {};
+                // Initialize all switches to false first
+                ['Imsak', 'Subuh', 'Terbit', 'Dhuha', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'].forEach(name => {
+                    states[name] = false;
+                });
+                // Then set enabled ones from preferences
+                prefs.forEach((pref: NotificationPreference) => {
+                    states[pref.prayerName] = pref.isEnabled;
+                });
+                setNotificationStates(states);
+            }
+        }
+    }
+    setupNotifications();
+  }, []);
+
+  const logScheduleDetails = () => {
+    if (schedule) {
+        const now = new Date();
+        console.log('=== PRAYER SCHEDULE DETAILS ===');
+        console.log('Current Time:', now.toLocaleString());
+        console.log('\nPrayer Times Today:');
+        
+        const prayerTimes = [
+            { name: 'Imsak', time: schedule.imsak, sound: 'default', channel: 'prayer-reminder' },
+            { name: 'Subuh', time: schedule.subuh, sound: 'adzan_shubuh.mp3', channel: 'prayer-times-fajr' },
+            { name: 'Terbit', time: schedule.terbit, sound: 'default', channel: 'prayer-reminder' },
+            { name: 'Dhuha', time: schedule.dhuha, sound: 'default', channel: 'prayer-reminder' },
+            { name: 'Dzuhur', time: schedule.dzuhur, sound: 'adzan.mp3', channel: 'prayer-times' },
+            { name: 'Ashar', time: schedule.ashar, sound: 'adzan.mp3', channel: 'prayer-times' },
+            { name: 'Maghrib', time: schedule.maghrib, sound: 'adzan.mp3', channel: 'prayer-times' },
+            { name: 'Isya', time: schedule.isya, sound: 'adzan.mp3', channel: 'prayer-times' }
+        ];
+
+        prayerTimes.forEach(prayer => {
+            const [hours, minutes] = prayer.time.split(':').map(Number);
+            const prayerDate = new Date();
+            prayerDate.setHours(hours, minutes, 0, 0);
+
+            if (prayerDate.getTime() <= now.getTime()) {
+                prayerDate.setDate(prayerDate.getDate() + 1);
+            }
+
+            console.log(`\n${prayer.name}:`);
+            console.log('Time:', prayer.time);
+            console.log('Sound:', prayer.sound);
+            console.log('Channel:', prayer.channel);
+            console.log('Next Schedule:', prayerDate.toLocaleString());
+            
+            // Log reminder times
+            [30, 15, 5].forEach(mins => {
+                const reminderTime = new Date(prayerDate);
+                reminderTime.setMinutes(reminderTime.getMinutes() - mins);
+                console.log(`${mins}min reminder:`, reminderTime.toLocaleString());
+            });
+        });
+
+        const nextPrayer = PrayerTimeHelpers.calculateNextPrayer(schedule);
+        console.log('\nNext Prayer:', nextPrayer?.name);
+        
+        console.log('\nNotification States:');
+        console.log(notificationStates);
+    }
+  };
 
   const handleNotificationToggle = async (prayerName: string, enabled: boolean) => {
-      const newStates = { ...notificationStates, [prayerName]: enabled };
-      setNotificationStates(newStates);
+    const newStates = { ...notificationStates, [prayerName]: enabled };
+    setNotificationStates(newStates);
 
-      const preferences: NotificationPreference[] = Object.keys(newStates).map(name => ({
-          prayerName: name,
-          isEnabled: newStates[name],
-          soundType: name === 'Subuh' ? 'fajr' : 'regular',
-          minutesBefore: 10
-      }));
+    const preferences: NotificationPreference[] = [{
+        prayerName,
+        isEnabled: enabled,
+        soundType: prayerName.toLowerCase() === 'subuh' ? 'fajr' : 
+                  ['imsak', 'terbit', 'dhuha'].includes(prayerName.toLowerCase()) ? 'none' : 'regular',
+        minutesBefore: 10
+    }];
 
-      await AsyncStorage.setItem('notificationPreferences', JSON.stringify(preferences));
-      if (schedule) {
-          await PrayerTimeHelpers.scheduleNotifications(schedule, preferences);
-      }
+    await AsyncStorage.setItem('notificationPreferences', JSON.stringify(preferences));
+    
+    if (schedule) {
+        if (enabled) {
+            await PrayerTimeHelpers.scheduleNotifications(schedule, preferences);
+            await registerBackgroundFetch();
+        } else {
+            await Notifications.cancelAllScheduledNotificationsAsync();
+        }
+    }
   };
 
-  const testNotification = async () => {
-    const testTime = new Date();
-    testTime.setSeconds(testTime.getSeconds() + 5); // Will trigger in 5 seconds
-    
-    await PrayerTimeHelpers.scheduleNotification({
-      title: "Test Adzan",
-      body: "Testing adzan notification sound",
-      time: testTime,
-      data: {
-        prayerName: 'Test',
-        minutesBefore: 0
-      }
-    });
-  };
-  
-    
   const downloadMonthlySchedule = async () => {
     if (!currentCity) return;
   
@@ -327,22 +385,26 @@ export default function JadwalShalat() {
             </View>
           )}
   
-          <View style={styles.notificationToggle}>
-            <Switch
-              value={notificationStates[title] || false}
-              onValueChange={(enabled) => handleNotificationToggle(title, enabled)}
-              trackColor={{ false: '#767577', true: '#4A148C' }}
-              thumbColor={notificationStates[title] ? '#7E57C2' : '#f4f3f4'}
-              accessibilityLabel={`Aktifkan notifikasi ${title}`}
-            />
-          </View>
+          {title !== 'Terbit' && title !== 'Dhuha' && (
+            <View style={styles.notificationToggle}>
+              <Switch
+                value={notificationStates[title] || false}
+                onValueChange={(enabled) => handleNotificationToggle(title, enabled)}
+                trackColor={{ false: '#767577', true: '#4A148C' }}
+                thumbColor={notificationStates[title] ? '#7E57C2' : '#f4f3f4'}
+                accessibilityLabel={`Aktifkan notifikasi ${title}`}
+              />
+            </View>
+          )}
   
-          <View style={styles.reminderInfo}>
-            <MaterialCommunityIcons name="bell-outline" size={16} color="#E1BEE7" />
-            <Text style={styles.reminderText}>
-              30, 15, 5 menit sebelum waktu {title}
-            </Text>
-          </View>
+          {title !== 'Terbit' && title !== 'Dhuha' && (
+            <View style={styles.reminderInfo}>
+              <MaterialCommunityIcons name="bell-outline" size={16} color="#E1BEE7" />
+              <Text style={styles.reminderText}>
+                Notifikasi 30, 15, 5 menit sebelum waktu {title}
+              </Text>
+            </View>
+          )}
         </LinearGradient>
       </TouchableOpacity>
     );
@@ -375,29 +437,17 @@ export default function JadwalShalat() {
         </View>
 
         {schedule && (
-          <Text style={styles.date}>{schedule.tanggal}</Text>
+            <Text style={styles.date}>
+            {new Date().toLocaleDateString('id-ID', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </Text>
         )}
       </View>
-
-      <View>
-      {/* Test Purpose */}
-      {/* <TouchableOpacity 
-        style={styles.testButton}
-        onPress={testNotification}
-      >
-        <Text style={styles.buttonText}>Test Notification (5s)</Text>
-      </TouchableOpacity> */}
-      
-      </View>
-      
-      {/* Test Purpose */}
-      <TouchableOpacity 
-        style={styles.testButton}
-        onPress={testNotification}
-      >
-        <Text style={styles.buttonText}>Test Adzan (5s)</Text>
-      </TouchableOpacity>
-
+    
       <ScrollView style={styles.content}>
         {schedule && (
           <View style={styles.prayerGrid}>
@@ -422,7 +472,6 @@ export default function JadwalShalat() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -479,7 +528,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     overflow: 'hidden',
     elevation: 3,
-    height: 120,
+    height: 200,
   },
   notificationToggle: {
     position: 'absolute',
@@ -527,19 +576,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
   },
-  // Test Purposes
-  testButton: {
-    backgroundColor: '#7E57C2',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
-    alignItems: 'center'
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 14
-  },
-  // End Test
   nextPrayerCard: {
   transform: [{scale: 1.02}],
   elevation: 8,
